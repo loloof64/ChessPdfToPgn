@@ -1,13 +1,21 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:pdfrx/pdfrx.dart';
+
 import 'core/models/game_extraction_config.dart';
 import 'core/services/tesseract_service.dart';
 import 'features/config/config_screen.dart';
+import 'features/extraction/extraction_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  pdfrxFlutterInitialize(dismissPdfiumWasmWarnings: true);
   runApp(const ChessExtractorApp());
 }
+
+// ---------------------------------------------------------------------------
+// App root
+// ---------------------------------------------------------------------------
 
 class ChessExtractorApp extends StatelessWidget {
   const ChessExtractorApp({super.key});
@@ -66,7 +74,7 @@ class _TesseractGateState extends State<_TesseractGate> {
 }
 
 // ---------------------------------------------------------------------------
-// App root — holds the extraction config in state
+// App root — holds config in state, routes between config and extraction
 // ---------------------------------------------------------------------------
 
 class _AppRoot extends StatefulWidget {
@@ -83,47 +91,15 @@ class _AppRootState extends State<_AppRoot> {
 
   @override
   Widget build(BuildContext context) {
-    // No config yet — show the configuration screen
+    // No config yet → configuration screen
     if (_config == null) {
       return ConfigScreen(
         onConfirmed: (config) => setState(() => _config = config),
       );
     }
 
-    // Config set — placeholder for the main extraction screen
-    // TODO: replace with the actual extraction screen
-    return Scaffold(
-      appBar: AppBar(title: const Text('Chess Extractor')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle_outline,
-              size: 64,
-              color: Colors.green,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Ready — ${widget.tesseractVersion}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Locale: ${_config!.locale.name}  |  '
-              'Figurines: ${_config!.usesFigurine}  |  '
-              'Comments: ${_config!.commentStyle.name}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 32),
-            OutlinedButton(
-              onPressed: () => setState(() => _config = null),
-              child: const Text('Change settings'),
-            ),
-          ],
-        ),
-      ),
-    );
+    // Config confirmed → extraction screen
+    return ExtractionScreen(config: _config!);
   }
 }
 
@@ -152,7 +128,7 @@ class _SplashScreen extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Tesseract missing screen — shown if Tesseract is not in PATH
+// Tesseract missing screen
 // ---------------------------------------------------------------------------
 
 class _TesseractMissingScreen extends StatelessWidget {
