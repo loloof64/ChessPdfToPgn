@@ -7,18 +7,18 @@ import 'annotation_parser.dart';
 
 /// Parses raw OCR text into a [ChessGame].
 ///
-/// Comment attachment rules:
-///   - Comment before any move       → stored in [ChessGame.headers] as 'Comment'
-///   - Comment immediately after a move → stored as [ChessMove.commentAfter]
-///   - Comment immediately before a move → stored as [ChessMove.commentBefore]
-///   - Two consecutive comments      → merged with a space separator
-///   - Comment after the result      → stored in [ChessGame.headers] as 'CommentAfterResult'
+/// Comment detection strategy (in priority order):
+///   1. Delimited inline comments  : { ... }  ( ... )  [ ... ]
+///   2. Paragraph comments         : block separated by \n\n with no SAN tokens
+///   3. Undelimited inline comments: any token that is not SAN, not a move
+///                                   number, not a result → comment
 ///
-/// Variation rules:
-///   - Variations are parsed recursively into [ChessMove.variations]
-///   - Variations can be nested to any depth
-///   - The position context (move number + color) is inferred from the
-///     variation content itself, not from the parent game state
+/// Comment attachment rules:
+///   - Comment before any move         → [ChessGame.headers] key 'Comment'
+///   - Comment immediately after move  → [ChessMove.commentAfter]
+///   - Comment immediately before move → [ChessMove.commentBefore]
+///   - Two consecutive comments        → merged with a space separator
+///   - Comment after result            → [ChessGame.headers] key 'CommentAfterResult'
 class PgnParser {
   final GameExtractionConfig config;
   late final PieceLocalizer _localizer;
@@ -31,14 +31,52 @@ class PgnParser {
   // Public entry point
   // ---------------------------------------------------------------------------
 
-  ChessGame parse(String rawOcr) => _parseTokens(_tokenize(rawOcr));
+  ChessGame parse(String rawOcr) {
+    // Pre-pass: convert paragraph comments into explicit { } delimiters
+    final normalized = _normalizeParagraphComments(rawOcr);
+    return _parseTokens(_tokenize(normalized));
+  }
 
   // ---------------------------------------------------------------------------
-  // Core parser — shared by main game and recursive variation calls
+  // Pre-pass — paragraph comment normalization
   // ---------------------------------------------------------------------------
 
-  /// Parses a flat list of tokens into a [ChessGame].
-  /// Used both for the main game and for each variation recursively.
+  /// Converts paragraph-style comments into braced comments.
+  ///
+  /// A paragraph is considered a comment if it is separated from surrounding
+  /// text by blank lines (\n\n) AND contains no SAN tokens or move numbers.
+  String _normalizeParagraphComments(String text) {
+    // Split on double newlines to get paragraphs
+    final paragraphs = text.split(RegExp(r'\n{2,}'));
+    final result = <String>[];
+
+    for (final para in paragraphs) {
+      final trimmed = para.trim();
+      if (trimmed.isEmpty) continue;
+
+      if (_looksLikeComment(trimmed)) {
+        // Wrap in braces so the main tokenizer handles it uniformly
+        result.add('{ $trimmed }');
+      } else {
+        result.add(trimmed);
+      }
+    }
+
+    return result.join('\n');
+  }
+
+  /// Returns true if [text] contains no SAN moves and no move numbers.
+  /// Such a paragraph is treated as a comment.
+  bool _looksLikeComment(String text) {
+    final hasMoveNumber = RegExp(r'\d+\.').hasMatch(text);
+    final hasSanMove = _sanPattern.hasMatch(text);
+    return !hasMoveNumber && !hasSanMove;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Core parser
+  // ---------------------------------------------------------------------------
+
   ChessGame _parseTokens(List<_Token> tokens) {
     final moves = <ChessMove>[];
     final headers = <String, String>{
@@ -60,20 +98,20 @@ class PgnParser {
           final text = token.value;
 
           if (resultSeen) {
-            // Comment after result
-            final existing = headers['CommentAfterResult'];
-            headers['CommentAfterResult'] = _merge(existing, text)!;
+            headers['CommentAfterResult'] = _merge(
+              headers['CommentAfterResult'],
+              text,
+            )!;
             break;
           }
 
           if (!gameStarted) {
-            // Comment before first move → header comment
             headers['Comment'] = _merge(headers['Comment'], text)!;
             break;
           }
 
-          // Attach as commentAfter to the last parsed move (merge if needed)
           if (moves.isNotEmpty) {
+            // Attach as commentAfter to the last parsed move
             final last = moves.removeLast();
             moves.add(
               ChessMove(
@@ -96,7 +134,6 @@ class PgnParser {
           moveNumber = int.parse(
             token.value.replaceAll(RegExp(r'\.+'), '').trim(),
           );
-          // '1...' indicates a black move
           color = token.value.contains('...')
               ? PieceColor.black
               : PieceColor.white;
@@ -132,12 +169,9 @@ class PgnParser {
 
         // --------------------------------------------------------------------
         case _TokenType.variation:
-          // Parse variation content recursively, then attach to the last move
-          if (moves.isEmpty) break; // variation before any move — ignore
+          if (moves.isEmpty) break;
 
           final variationGame = _parseTokens(_tokenize(token.value));
-
-          // Attach the variation to the last parsed move
           final last = moves.removeLast();
           moves.add(
             ChessMove(
@@ -163,9 +197,11 @@ class PgnParser {
       headers['Comment'] = _merge(headers['Comment'], pendingComment)!;
     }
 
-    final result = _extractResult(
-      tokens.where((t) => t.type == _TokenType.result).firstOrNull?.value,
-    );
+    final resultValue = tokens
+        .where((t) => t.type == _TokenType.result)
+        .firstOrNull
+        ?.value;
+    final result = _validateResult(resultValue);
     if (result != null) headers['Result'] = result;
 
     return ChessGame(headers: headers, moves: moves, result: result);
@@ -188,7 +224,9 @@ class PgnParser {
         continue;
       }
 
-      // Comment { ... }
+      // --- Delimited comments ---
+
+      // { ... }
       if (ch == '{') {
         final end = text.indexOf('}', i + 1);
         if (end != -1) {
@@ -200,14 +238,28 @@ class PgnParser {
         }
       }
 
-      // Parenthesis block ( ... ) — variation or comment depending on content
+      // [ ... ] — inside move flow = comment (not a PGN header)
+      // Headers are stripped before this stage; anything remaining is a comment.
+      if (ch == '[') {
+        final end = text.indexOf(']', i + 1);
+        if (end != -1) {
+          final content = text.substring(i + 1, end).trim();
+          // Only treat as comment if it does NOT look like a PGN header tag
+          // i.e. it doesn't start with a capitalized word followed by a quote
+          final isPgnHeader = RegExp(r'^[A-Z][a-zA-Z]+ "').hasMatch(content);
+          if (!isPgnHeader) {
+            tokens.add(_Token(_TokenType.comment, content));
+          }
+          i = end + 1;
+          continue;
+        }
+      }
+
+      // ( ... ) — variation or comment depending on content + config
       if (ch == '(') {
         final end = _findMatchingParen(text, i);
         if (end != -1) {
           final content = text.substring(i + 1, end).trim();
-
-          // Heuristic: starts with a digit → variation ; otherwise → comment
-          // (applies only when commentStyle allows parentheses)
           final looksLikeVariation = RegExp(r'^\d').hasMatch(content);
 
           if (!looksLikeVariation &&
@@ -215,7 +267,6 @@ class PgnParser {
                   config.commentStyle == CommentStyle.mixed)) {
             tokens.add(_Token(_TokenType.comment, content));
           } else {
-            // Variation — raw content is kept, parsed recursively later
             tokens.add(_Token(_TokenType.variation, content));
           }
           i = end + 1;
@@ -223,7 +274,7 @@ class PgnParser {
         }
       }
 
-      // Result token
+      // --- Result ---
       final resultMatch = RegExp(r'1-0|0-1|1/2-1/2|\*').matchAsPrefix(text, i);
       if (resultMatch != null) {
         tokens.add(_Token(_TokenType.result, resultMatch.group(0)!));
@@ -231,7 +282,7 @@ class PgnParser {
         continue;
       }
 
-      // Move number — '1.' (white) or '1...' (black)
+      // --- Move number ---
       final moveNumMatch = RegExp(r'\d+\.{1,3}').matchAsPrefix(text, i);
       if (moveNumMatch != null) {
         tokens.add(_Token(_TokenType.moveNumber, moveNumMatch.group(0)!));
@@ -239,19 +290,33 @@ class PgnParser {
         continue;
       }
 
-      // SAN move (standard, castling, promotion, FAN glyphs)
-      final moveMatch = RegExp(
-        r'[KQRBN♔♕♖♗♘♚♛♜♝♞]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?'
-        r'|O-O(?:-O)?[+#]?'
-        r'|0-0(?:-0)?[+#]?',
-      ).matchAsPrefix(text, i);
+      // --- SAN move ---
+      final moveMatch = _sanPattern.matchAsPrefix(text, i);
       if (moveMatch != null && moveMatch.group(0)!.isNotEmpty) {
         tokens.add(_Token(_TokenType.move, moveMatch.group(0)!));
         i = moveMatch.end;
         continue;
       }
 
-      i++; // unrecognized character — skip
+      // --- Undelimited comment ---
+      // Anything that is not a recognized token is accumulated as a comment
+      // until the next whitespace boundary or recognized token.
+      final wordMatch = RegExp(r'\S+').matchAsPrefix(text, i);
+      if (wordMatch != null) {
+        final word = wordMatch.group(0)!;
+        // Merge consecutive undelimited comment words into the previous
+        // comment token if possible, otherwise create a new one.
+        if (tokens.isNotEmpty && tokens.last.type == _TokenType.comment) {
+          final prev = tokens.removeLast();
+          tokens.add(_Token(_TokenType.comment, '${prev.value} $word'));
+        } else {
+          tokens.add(_Token(_TokenType.comment, word));
+        }
+        i = wordMatch.end;
+        continue;
+      }
+
+      i++; // unrecognized single character — skip
     }
 
     return tokens;
@@ -260,6 +325,13 @@ class PgnParser {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  /// SAN pattern — covers standard moves, castling, promotions, FAN glyphs.
+  static final _sanPattern = RegExp(
+    r'[KQRBN♔♕♖♗♘♚♛♜♝♞]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?'
+    r'|O-O(?:-O)?[+#]?'
+    r'|0-0(?:-0)?[+#]?',
+  );
 
   /// Finds the closing parenthesis matching the opening one at [open].
   /// Handles arbitrary nesting depth.
@@ -272,7 +344,7 @@ class PgnParser {
         if (depth == 0) return j;
       }
     }
-    return -1; // unmatched parenthesis
+    return -1;
   }
 
   /// Merges two nullable strings with a space separator.
@@ -286,7 +358,7 @@ class PgnParser {
       ? FanNormalizer.normalize(move)
       : _localizer.normalize(move);
 
-  String? _extractResult(String? value) {
+  String? _validateResult(String? value) {
     if (value == null) return null;
     const valid = {'1-0', '0-1', '1/2-1/2', '*'};
     return valid.contains(value) ? value : null;
