@@ -4,7 +4,6 @@ import 'package:pdfrx/pdfrx.dart';
 
 import 'core/models/game_extraction_config.dart';
 import 'core/services/tesseract_service.dart';
-import 'features/config/config_screen.dart';
 import 'features/extraction/extraction_screen.dart';
 
 void main() async {
@@ -56,55 +55,27 @@ class _TesseractGateState extends State<_TesseractGate> {
     return FutureBuilder<String?>(
       future: _versionFuture,
       builder: (context, snapshot) {
-        // Still checking
         if (snapshot.connectionState != ConnectionState.done) {
           return const _SplashScreen();
         }
-
-        // Tesseract not found
         if (snapshot.data == null) {
           return const _TesseractMissingScreen();
         }
-
-        // Tesseract found — proceed to config
-        return _AppRoot(tesseractVersion: snapshot.data!);
+        // Tesseract found — start directly with default config
+        return ExtractionScreen(
+          config: const GameExtractionConfig(
+            locale: NotationLocale.english,
+            usesFigurine: false,
+            commentStyle: CommentStyle.braces,
+          ),
+        );
       },
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// App root — holds config in state, routes between config and extraction
-// ---------------------------------------------------------------------------
-
-class _AppRoot extends StatefulWidget {
-  final String tesseractVersion;
-
-  const _AppRoot({required this.tesseractVersion});
-
-  @override
-  State<_AppRoot> createState() => _AppRootState();
-}
-
-class _AppRootState extends State<_AppRoot> {
-  GameExtractionConfig? _config;
-
-  @override
-  Widget build(BuildContext context) {
-    // No config yet → configuration screen
-    if (_config == null) {
-      return ConfigScreen(
-        onConfirmed: (config) => setState(() => _config = config),
-      );
-    }
-
-    // Config confirmed → extraction screen
-    return ExtractionScreen(config: _config!);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Splash screen — shown while detecting Tesseract
+// Splash screen
 // ---------------------------------------------------------------------------
 
 class _SplashScreen extends StatelessWidget {

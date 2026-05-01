@@ -1,22 +1,35 @@
 import 'package:flutter/material.dart';
 import '../../core/models/game_extraction_config.dart';
 
-/// Screen displayed before any extraction.
+/// Screen displayed before any extraction, and accessible via Settings button.
 /// Lets the user configure notation locale, figurine mode, and comment style.
 class ConfigScreen extends StatefulWidget {
-  /// Called when the user confirms the configuration.
   final void Function(GameExtractionConfig config) onConfirmed;
+  final GameExtractionConfig? initialConfig;
 
-  const ConfigScreen({required this.onConfirmed, super.key});
+  const ConfigScreen({
+    required this.onConfirmed,
+    this.initialConfig,
+    super.key,
+  });
 
   @override
   State<ConfigScreen> createState() => _ConfigScreenState();
 }
 
 class _ConfigScreenState extends State<ConfigScreen> {
-  NotationLocale _locale = NotationLocale.english;
-  bool _usesFigurine = false;
-  CommentStyle _commentStyle = CommentStyle.braces;
+  late NotationLocale _locale;
+  late bool _usesFigurine;
+  late CommentStyle _commentStyle;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialConfig;
+    _locale = initial?.locale ?? NotationLocale.english;
+    _usesFigurine = initial?.usesFigurine ?? false;
+    _commentStyle = initial?.commentStyle ?? CommentStyle.braces;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,10 +80,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
               },
               child: Column(
                 children: [
-                  _RadioTile<bool>(
-                    value: false,
-                    label: 'Letters  (e.g. Nf3, Cf3, Sf3)',
-                  ),
+                  _RadioTile<bool>(value: false, label: 'Letters  (e.g. Nf3, Cf3, Sf3)'),
                   _RadioTile<bool>(value: true, label: 'Figurines  (e.g. ♘f3)'),
                 ],
               ),
@@ -90,18 +100,9 @@ class _ConfigScreenState extends State<ConfigScreen> {
               },
               child: Column(
                 children: [
-                  _RadioTile<CommentStyle>(
-                    value: CommentStyle.braces,
-                    label: 'Braces  { comment }',
-                  ),
-                  _RadioTile<CommentStyle>(
-                    value: CommentStyle.parentheses,
-                    label: 'Parentheses  ( comment )',
-                  ),
-                  _RadioTile<CommentStyle>(
-                    value: CommentStyle.mixed,
-                    label: 'Mixed  — auto-detect',
-                  ),
+                  _RadioTile<CommentStyle>(value: CommentStyle.braces, label: 'Braces  { comment }'),
+                  _RadioTile<CommentStyle>(value: CommentStyle.parentheses, label: 'Parentheses  ( comment )'),
+                  _RadioTile<CommentStyle>(value: CommentStyle.mixed, label: 'Mixed  — auto-detect'),
                 ],
               ),
             ),

@@ -1,19 +1,20 @@
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:collection/collection.dart';
 
 import '../../core/models/chess_game.dart';
 import '../../core/models/game_extraction_config.dart';
-import '../../core/services/opencv_service.dart';
-import '../../core/services/tesseract_service.dart';
-import '../../features/processing/pgn_parser.dart';
-import '../../features/export/pgn_serializer.dart';
-import '../../core/services/page_analyzer.dart';
 import '../../core/models/page_layout.dart';
+import '../../core/services/opencv_service.dart';
+import '../../core/services/page_analyzer.dart';
+import '../../core/services/tesseract_service.dart';
+import '../../features/config/config_screen.dart';
+import '../../features/export/pgn_serializer.dart';
+import '../../features/processing/pgn_parser.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -29,31 +30,78 @@ class ExtractionScreen extends StatefulWidget {
 }
 
 class _ExtractionScreenState extends State<ExtractionScreen> {
-  // Services
-  late final TesseractService _tesseract;
-  late final OpenCvService _opencv;
-  late final PageAnalyzer _analyzer;
-  late final PgnParser _parser;
-  late final PgnSerializer _serializer;
+  // Services — rebuilt on config change
+  late TesseractService _tesseract;
+  late OpenCvService _opencv;
+  late PageAnalyzer _analyzer;
+  late PgnParser _parser;
+  final PgnSerializer _serializer = PgnSerializer();
+
+  // Config — mutable, updated via Settings
+  late GameExtractionConfig _config;
 
   // State
   _ExtractionStatus _status = _ExtractionStatus.idle;
   String _statusMsg = '';
-  double? _progress; // null = indeterminate
+  double? _progress;
   final List<ChessGame> _games = [];
   String? _errorMsg;
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
 
   @override
   void initState() {
     super.initState();
+    _config = widget.config;
+    _rebuildServices();
+  }
+
+  /// Rebuilds all config-dependent services.
+  /// Called on init and whenever settings are updated.
+  void _rebuildServices() {
     _tesseract = TesseractService(
-      tessLang: widget.config.locale.tessLang,
+      tessLang: _config.locale.tessLang,
       psm: PageSegMode.singleBlock,
     );
     _opencv = OpenCvService();
     _analyzer = PageAnalyzer(_opencv);
-    _parser = PgnParser(widget.config);
-    _serializer = PgnSerializer();
+    _parser = PgnParser(_config);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Settings
+  // ---------------------------------------------------------------------------
+
+  Future<void> _openSettings() async {
+    final updated = await showDialog<GameExtractionConfig>(
+      context: context,
+      builder: (context) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 600),
+          child: ConfigScreen(
+            initialConfig: _config,
+            onConfirmed: (config) => Navigator.of(context).pop(config),
+          ),
+        ),
+      ),
+    );
+
+    if (updated == null) return;
+
+    setState(() {
+      _config = updated;
+      _rebuildServices();
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Settings updated — applies to next extraction'),
+        ),
+      );
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -115,8 +163,6 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       });
 
       final page = doc.pages[i];
-
-      // Render at 300 DPI equivalent (native PDF unit = 72 DPI)
       const scale = 300 / 72.0;
       final fullWidth = (page.width * scale).round().toDouble();
       final fullHeight = (page.height * scale).round().toDouble();
@@ -126,7 +172,6 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
         fullHeight: fullHeight,
         backgroundColor: 0xFFFFFFFF,
       );
-
       if (image == null) continue;
 
       final outPath = p.join(
@@ -135,7 +180,6 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       );
       await File(outPath).writeAsBytes(image.pixels);
       image.dispose();
-
       imagePaths.add(outPath);
     }
 
@@ -177,36 +221,31 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
           );
 
           if (boundary != null) {
-            // Flush the previous accumulated game
             if (pendingTexts.isNotEmpty) {
               _flushGame(pendingTexts);
               pendingTexts.clear();
             }
-            // Start the new game with its header
             if (boundary.header.text != null) {
               pendingTexts.add(boundary.header.text!);
             }
             if (boundary.subtitle?.text != null) {
               pendingTexts.add(boundary.subtitle!.text!);
             }
-            // If the boundary has a start diagram, inject the FEN immediately
             if (boundary.hasCustomStartPosition) {
               pendingTexts.add('[FEN "${boundary.startDiagram!.fen}"]');
             }
             gameStarted = false;
-            continue; // header block already handled via boundary
+            continue;
           }
 
           // Normal block processing
           switch (block) {
-            // Diagram — only the first one per game is kept (start position)
             case DiagramBlock():
               if (!gameStarted && block.fen != null) {
                 pendingTexts.add('[FEN "${block.fen}"]');
                 gameStarted = true;
               }
 
-            // Header block not caught by boundaries (fallback)
             case HeaderBlock() when block.isGameHeader:
               if (pendingTexts.isNotEmpty) {
                 _flushGame(pendingTexts);
@@ -215,7 +254,6 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
               if (block.text != null) pendingTexts.add(block.text!);
               gameStarted = false;
 
-            // Text block — preprocess + OCR
             case TextBlock():
               setState(() => _statusMsg = 'OCR — page ${i + 1} / $total…');
               final preprocessed = await _opencv.preprocessBookPage(path);
@@ -240,14 +278,10 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
   // Game flushing
   // ---------------------------------------------------------------------------
 
-  /// Parses accumulated OCR text blocks into a [ChessGame] and adds it
-  /// to the results list if it contains at least one move.
   void _flushGame(List<String> textBlocks) {
     final rawText = textBlocks.join('\n');
     final game = _parser.parse(rawText);
-
     if (game.moves.isEmpty) return;
-
     setState(() => _games.add(game));
   }
 
@@ -267,7 +301,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
     final buffer = StringBuffer();
     for (final game in _games) {
       buffer.writeln(_serializer.serialize(game));
-      buffer.writeln(); // blank line between games
+      buffer.writeln();
     }
 
     await File(savePath).writeAsString(buffer.toString());
@@ -291,6 +325,11 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       appBar: AppBar(
         title: const Text('Chess Extractor'),
         actions: [
+          IconButton(
+            onPressed: _openSettings,
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+          ),
           if (_games.isNotEmpty)
             TextButton.icon(
               onPressed: _exportPgn,
@@ -301,15 +340,12 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       ),
       body: Column(
         children: [
-          // Progress banner
           if (_status == _ExtractionStatus.running)
             _ProgressBanner(message: _statusMsg, progress: _progress),
 
-          // Error banner
           if (_status == _ExtractionStatus.error && _errorMsg != null)
             _ErrorBanner(message: _errorMsg!),
 
-          // Game list
           Expanded(
             child: _games.isEmpty
                 ? _EmptyState(status: _status, onPickFile: _pickAndProcess)
