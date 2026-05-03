@@ -43,6 +43,7 @@ dependencies:
   tflite_flutter: ^0.12.1
   chess: ^0.8.1
   mocktail: ^1.0.5
+  image: ^4.8.0
 
 dev_dependencies:
   flutter_test:
@@ -96,3 +97,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+hooks:
+  user_defines:
+    dartcv4:
+      include_modules:
+        - imgcodecs
+        - imgproc
+        - photo
+        - calib3d

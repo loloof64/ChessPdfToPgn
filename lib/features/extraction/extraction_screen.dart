@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -10,14 +11,14 @@ import 'package:dartcv4/dartcv.dart' as cv;
 import '../../core/models/chess_game.dart';
 import '../../core/models/game_extraction_config.dart';
 import '../../core/models/page_layout.dart';
+import '../../core/services/diagram_classifier.dart';
 import '../../core/services/opencv_service.dart';
 import '../../core/services/page_analyzer.dart';
 import '../../core/services/tesseract_service.dart';
-import '../../core/services/diagram_classifier.dart';
 import '../../features/config/config_screen.dart';
 import '../../features/export/pgn_serializer.dart';
-import '../../features/processing/pgn_parser.dart';
 import '../../features/processing/move_validator.dart';
+import '../../features/processing/pgn_parser.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -39,6 +40,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
   late PageAnalyzer _analyzer;
   late PgnParser _parser;
   final PgnSerializer _serializer = PgnSerializer();
+  final MoveValidator _validator = MoveValidator();
 
   // Config — mutable, updated via Settings
   late GameExtractionConfig _config;
@@ -61,8 +63,6 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
     _rebuildServices();
   }
 
-  /// Rebuilds all config-dependent services.
-  /// Called on init and whenever settings are updated.
   void _rebuildServices() {
     _tesseract = TesseractService(
       tessLang: _config.locale.tessLang,
@@ -90,14 +90,11 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
         ),
       ),
     );
-
     if (updated == null) return;
-
     setState(() {
       _config = updated;
       _rebuildServices();
     });
-
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -132,9 +129,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
 
     try {
       final imagePaths = ext == '.pdf' ? await _rasterizePdf(path) : [path];
-
       await _processPages(imagePaths);
-
       setState(() => _status = _ExtractionStatus.done);
     } catch (e) {
       setState(() {
@@ -167,12 +162,12 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
 
       final page = doc.pages[i];
       const scale = 300 / 72.0;
-      final fullWidth = (page.width * scale).round().toDouble();
-      final fullHeight = (page.height * scale).round().toDouble();
+      final fullWidth = (page.width * scale).round();
+      final fullHeight = (page.height * scale).round();
 
       final image = await page.render(
-        fullWidth: fullWidth,
-        fullHeight: fullHeight,
+        fullWidth: fullWidth.toDouble(),
+        fullHeight: fullHeight.toDouble(),
         backgroundColor: 0xFFFFFFFF,
       );
       if (image == null) continue;
@@ -181,9 +176,23 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
         outDir.path,
         'page_${(i + 1).toString().padLeft(4, '0')}.png',
       );
-      await File(outPath).writeAsBytes(image.pixels);
+
+      // pdfrx returns raw RGBA pixels — encode to proper PNG so OpenCV can read it
+      final imgLib = img.Image.fromBytes(
+        width: fullWidth,
+        height: fullHeight,
+        bytes: image.pixels.buffer,
+        format: img.Format.uint8,
+        numChannels: 4,
+      );
+      final pngBytes = img.encodePng(imgLib);
+      await File(outPath).writeAsBytes(pngBytes);
       image.dispose();
+
       imagePaths.add(outPath);
+      debugPrint(
+        'Rasterized page ${i + 1}: $outPath (${pngBytes.length} bytes)',
+      );
     }
 
     await doc.dispose();
@@ -243,41 +252,33 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
 
           // Normal block processing
           switch (block) {
+            // Diagram — only the first one per game is kept (start position)
             case DiagramBlock():
-              // Only the first diagram per game is used (start position).
-              // Subsequent diagrams are mid-game illustrations and are ignored.
               if (!gameStarted) {
                 try {
                   final boardImg = await cv.imreadAsync(
                     path,
                     flags: cv.IMREAD_COLOR,
                   );
-
-                  // Warp board to flat 800×800 grid before classification
                   final board800 = await cv.resizeAsync(boardImg, (800, 800));
-
                   final classifier = DiagramClassifier();
                   await classifier.init();
-
                   final fen = await classifier.boardToFen(board800);
-
-                  // Standard starting position does not need a FEN header
                   const standardFen =
                       'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
                   if (fen != standardFen) {
                     pendingTexts.add('[FEN "$fen w KQkq - 0 1"]');
                   }
-
                   board800.dispose();
                   boardImg.dispose();
                   classifier.dispose();
                   gameStarted = true;
                 } catch (e) {
-                  // Diagram could not be classified — continue without FEN header
                   debugPrint('DiagramClassifier error: $e');
                 }
               }
 
+            // Header block — signals a new game
             case HeaderBlock() when block.isGameHeader:
               if (pendingTexts.isNotEmpty) {
                 _flushGame(pendingTexts);
@@ -286,6 +287,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
               if (block.text != null) pendingTexts.add(block.text!);
               gameStarted = false;
 
+            // Text block — preprocess + OCR
             case TextBlock():
               setState(() => _statusMsg = 'OCR — page ${i + 1} / $total…');
               final preprocessed = await _opencv.preprocessBookPage(path);
@@ -316,16 +318,12 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
     if (game.moves.isEmpty) return;
 
     // Validate moves through chess engine
-    final validator = MoveValidator();
-    final result = validator.validate(game);
-
-    // Use validated moves — keeps corrections, drops illegal moves
+    final result = _validator.validate(game);
     final validatedGame = ChessGame(
       headers: game.headers,
       moves: result.validMoves,
       result: game.result,
     );
-
     if (validatedGame.moves.isEmpty) return;
 
     // Log invalid moves for debugging
@@ -365,7 +363,6 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       buffer.writeln(_serializer.serialize(game));
       buffer.writeln();
     }
-
     await File(savePath).writeAsString(buffer.toString());
 
     if (mounted) {
@@ -404,10 +401,8 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
         children: [
           if (_status == _ExtractionStatus.running)
             _ProgressBanner(message: _statusMsg, progress: _progress),
-
           if (_status == _ExtractionStatus.error && _errorMsg != null)
             _ErrorBanner(message: _errorMsg!),
-
           Expanded(
             child: _games.isEmpty
                 ? _EmptyState(status: _status, onPickFile: _pickAndProcess)
