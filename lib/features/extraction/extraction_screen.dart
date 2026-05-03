@@ -17,6 +17,7 @@ import '../../core/services/diagram_classifier.dart';
 import '../../features/config/config_screen.dart';
 import '../../features/export/pgn_serializer.dart';
 import '../../features/processing/pgn_parser.dart';
+import '../../features/processing/move_validator.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -313,7 +314,37 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
     final rawText = textBlocks.join('\n');
     final game = _parser.parse(rawText);
     if (game.moves.isEmpty) return;
-    setState(() => _games.add(game));
+
+    // Validate moves through chess engine
+    final validator = MoveValidator();
+    final result = validator.validate(game);
+
+    // Use validated moves — keeps corrections, drops illegal moves
+    final validatedGame = ChessGame(
+      headers: game.headers,
+      moves: result.validMoves,
+      result: game.result,
+    );
+
+    if (validatedGame.moves.isEmpty) return;
+
+    // Log invalid moves for debugging
+    if (result.invalidMoves.isNotEmpty) {
+      debugPrint(
+        'Game "${game.headers['Event']}": '
+        '${result.invalidMoves.length} invalid move(s) — '
+        'accuracy: ${(result.accuracy * 100).toStringAsFixed(1)}%',
+      );
+      for (final inv in result.invalidMoves) {
+        debugPrint(
+          '  Move ${inv.move.moveNumber}. ${inv.move.san} '
+          '(raw: ${inv.move.rawOcr}) — ${inv.reason}'
+          '${inv.suggestion != null ? " → ${inv.suggestion}" : ""}',
+        );
+      }
+    }
+
+    setState(() => _games.add(validatedGame));
   }
 
   // ---------------------------------------------------------------------------
