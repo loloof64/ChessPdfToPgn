@@ -7,16 +7,10 @@ import 'annotation_parser.dart';
 
 /// Parses raw OCR text into a [ChessGame].
 ///
-/// Comment detection strategy (in priority order):
-///   1. Delimited inline comments  : { ... }  ( ... )  [ ... ]
-///   2. Paragraph comments         : block separated by \n\n with no SAN tokens
-///   3. Undelimited inline comments: any token that is not SAN, not a move
-///                                   number, not a result → comment
-///
 /// Comment attachment rules:
 ///   - Comment before any move         → [ChessGame.headers] key 'Comment'
+///   - Comment after move number       → [ChessMove.commentBefore]
 ///   - Comment immediately after move  → [ChessMove.commentAfter]
-///   - Comment immediately before move → [ChessMove.commentBefore]
 ///   - Two consecutive comments        → merged with a space separator
 ///   - Comment after result            → [ChessGame.headers] key 'CommentAfterResult'
 class PgnParser {
@@ -32,7 +26,6 @@ class PgnParser {
   // ---------------------------------------------------------------------------
 
   ChessGame parse(String rawOcr) {
-    // Pre-pass: convert paragraph comments into explicit { } delimiters
     final normalized = _normalizeParagraphComments(rawOcr);
     return _parseTokens(_tokenize(normalized));
   }
@@ -41,12 +34,7 @@ class PgnParser {
   // Pre-pass — paragraph comment normalization
   // ---------------------------------------------------------------------------
 
-  /// Converts paragraph-style comments into braced comments.
-  ///
-  /// A paragraph is considered a comment if it is separated from surrounding
-  /// text by blank lines (\n\n) AND contains no SAN tokens or move numbers.
   String _normalizeParagraphComments(String text) {
-    // Split on double newlines to get paragraphs
     final paragraphs = text.split(RegExp(r'\n{2,}'));
     final result = <String>[];
 
@@ -54,19 +42,21 @@ class PgnParser {
       final trimmed = para.trim();
       if (trimmed.isEmpty) continue;
 
+      // Do NOT rewrap text already delimited by braces
+      if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+        result.add(trimmed);
+        continue;
+      }
+
       if (_looksLikeComment(trimmed)) {
-        // Wrap in braces so the main tokenizer handles it uniformly
         result.add('{ $trimmed }');
       } else {
         result.add(trimmed);
       }
     }
-
     return result.join('\n');
   }
 
-  /// Returns true if [text] contains no SAN moves and no move numbers.
-  /// Such a paragraph is treated as a comment.
   bool _looksLikeComment(String text) {
     final hasMoveNumber = RegExp(r'\d+\.').hasMatch(text);
     final hasSanMove = _sanPattern.hasMatch(text);
@@ -90,6 +80,7 @@ class PgnParser {
     String? pendingComment;
     bool gameStarted = false;
     bool resultSeen = false;
+    _TokenType? lastTokenType; // tracks the previous token type
 
     for (final token in tokens) {
       switch (token.type) {
@@ -105,13 +96,22 @@ class PgnParser {
             break;
           }
 
+          // PRIORITY: comment right after a move number → commentBefore
+          // This must be checked BEFORE gameStarted, because when parsing
+          // '1. { before } e4', gameStarted is still false at this point.
+          if (lastTokenType == _TokenType.moveNumber) {
+            pendingComment = _merge(pendingComment, text);
+            break;
+          }
+
+          // Comment before the first move and not after a move number → header
           if (!gameStarted) {
             headers['Comment'] = _merge(headers['Comment'], text)!;
             break;
           }
 
+          // Comment after a move → commentAfter on the last parsed move
           if (moves.isNotEmpty) {
-            // Attach as commentAfter to the last parsed move
             final last = moves.removeLast();
             moves.add(
               ChessMove(
@@ -128,7 +128,6 @@ class PgnParser {
           } else {
             pendingComment = _merge(pendingComment, text);
           }
-
         // --------------------------------------------------------------------
         case _TokenType.moveNumber:
           moveNumber = int.parse(
@@ -190,6 +189,9 @@ class PgnParser {
         case _TokenType.result:
           resultSeen = true;
       }
+
+      // Track the last token type for comment attachment logic
+      lastTokenType = token.type;
     }
 
     // Leftover pending comment → header comment
@@ -224,9 +226,7 @@ class PgnParser {
         continue;
       }
 
-      // --- Delimited comments ---
-
-      // { ... }
+      // Comment { ... }
       if (ch == '{') {
         final end = text.indexOf('}', i + 1);
         if (end != -1) {
@@ -238,14 +238,11 @@ class PgnParser {
         }
       }
 
-      // [ ... ] — inside move flow = comment (not a PGN header)
-      // Headers are stripped before this stage; anything remaining is a comment.
+      // [ ... ] — inside move flow = comment
       if (ch == '[') {
         final end = text.indexOf(']', i + 1);
         if (end != -1) {
           final content = text.substring(i + 1, end).trim();
-          // Only treat as comment if it does NOT look like a PGN header tag
-          // i.e. it doesn't start with a capitalized word followed by a quote
           final isPgnHeader = RegExp(r'^[A-Z][a-zA-Z]+ "').hasMatch(content);
           if (!isPgnHeader) {
             tokens.add(_Token(_TokenType.comment, content));
@@ -255,7 +252,7 @@ class PgnParser {
         }
       }
 
-      // ( ... ) — variation or comment depending on content + config
+      // ( ... ) — variation or comment
       if (ch == '(') {
         final end = _findMatchingParen(text, i);
         if (end != -1) {
@@ -274,7 +271,7 @@ class PgnParser {
         }
       }
 
-      // --- Result ---
+      // Result
       final resultMatch = RegExp(r'1-0|0-1|1/2-1/2|\*').matchAsPrefix(text, i);
       if (resultMatch != null) {
         tokens.add(_Token(_TokenType.result, resultMatch.group(0)!));
@@ -282,7 +279,7 @@ class PgnParser {
         continue;
       }
 
-      // --- Move number ---
+      // Move number — '1.' (white) or '1...' (black)
       final moveNumMatch = RegExp(r'\d+\.{1,3}').matchAsPrefix(text, i);
       if (moveNumMatch != null) {
         tokens.add(_Token(_TokenType.moveNumber, moveNumMatch.group(0)!));
@@ -290,7 +287,7 @@ class PgnParser {
         continue;
       }
 
-      // --- SAN move ---
+      // SAN move — includes inline annotation symbols
       final moveMatch = _sanPattern.matchAsPrefix(text, i);
       if (moveMatch != null && moveMatch.group(0)!.isNotEmpty) {
         tokens.add(_Token(_TokenType.move, moveMatch.group(0)!));
@@ -298,14 +295,28 @@ class PgnParser {
         continue;
       }
 
-      // --- Undelimited comment ---
-      // Anything that is not a recognized token is accumulated as a comment
-      // until the next whitespace boundary or recognized token.
+      final standaloneAnnotation = RegExp(
+        r'⊙|□|±|∓|⩲|⩱|\+\-|\-\+|∞|→|⇄',
+      ).matchAsPrefix(text, i);
+      if (standaloneAnnotation != null) {
+        // Attach to previous move by appending to its value
+        if (tokens.isNotEmpty && tokens.last.type == _TokenType.move) {
+          final prev = tokens.removeLast();
+          tokens.add(
+            _Token(
+              _TokenType.move,
+              prev.value + standaloneAnnotation.group(0)!,
+            ),
+          );
+        }
+        i = standaloneAnnotation.end;
+        continue;
+      }
+
+      // Undelimited comment — accumulate unrecognized words
       final wordMatch = RegExp(r'\S+').matchAsPrefix(text, i);
       if (wordMatch != null) {
         final word = wordMatch.group(0)!;
-        // Merge consecutive undelimited comment words into the previous
-        // comment token if possible, otherwise create a new one.
         if (tokens.isNotEmpty && tokens.last.type == _TokenType.comment) {
           final prev = tokens.removeLast();
           tokens.add(_Token(_TokenType.comment, '${prev.value} $word'));
@@ -316,25 +327,36 @@ class PgnParser {
         continue;
       }
 
-      i++; // unrecognized single character — skip
+      i++;
     }
 
     return tokens;
   }
 
   // ---------------------------------------------------------------------------
+  // SAN pattern — includes inline annotation symbols after the move
+  // ---------------------------------------------------------------------------
+
+  RegExp get _sanPattern {
+    // Build piece letters dynamically from locale config
+    final localPieces = config.usesFigurine
+        ? '♔♕♖♗♘♚♛♜♝♞'
+        : config.locale.pieceMap.keys.join();
+
+    // Annotation suffix: !!, ??, !?, ?!, !, ?
+    const annotation = r'(?:!!|\?\?|!\?|\?!|!|\?)?';
+
+    return RegExp(
+      '[$localPieces]?[a-h]?[1-8]?x?[a-h][1-8](=[QRBN])?$annotation[+#]?'
+      '|O-O(?:-O)?$annotation[+#]?'
+      '|0-0(?:-0)?$annotation[+#]?',
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 
-  /// SAN pattern — covers standard moves, castling, promotions, FAN glyphs.
-  static final _sanPattern = RegExp(
-    r'[KQRBN♔♕♖♗♘♚♛♜♝♞]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?'
-    r'|O-O(?:-O)?[+#]?'
-    r'|0-0(?:-0)?[+#]?',
-  );
-
-  /// Finds the closing parenthesis matching the opening one at [open].
-  /// Handles arbitrary nesting depth.
   int _findMatchingParen(String text, int open) {
     var depth = 0;
     for (var j = open; j < text.length; j++) {
@@ -347,7 +369,6 @@ class PgnParser {
     return -1;
   }
 
-  /// Merges two nullable strings with a space separator.
   String? _merge(String? a, String? b) {
     if (a == null) return b;
     if (b == null) return a;

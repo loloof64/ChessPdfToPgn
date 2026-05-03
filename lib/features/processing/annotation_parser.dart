@@ -27,13 +27,27 @@ class AnnotationParser {
     var clean = token;
     final nags = <String>[];
 
-    // Order matters: longer symbols first (!!, ??, !?, ?!)
+    // Preserve promotion suffix BEFORE scanning for annotations
+    // e.g. e8=Q — the '=' here is promotion, not equality symbol
+    final promotionMatch = RegExp(r'=[QRBN]').firstMatch(clean);
+    final promotionSuffix = promotionMatch?.group(0); // '=Q', '=R', etc.
+    if (promotionSuffix != null) {
+      // Temporarily remove promotion to avoid '=' being treated as NAG
+      clean = clean.replaceFirst(promotionSuffix, '\x00PROMO\x00');
+    }
+
+    // Process annotations longest-first to avoid partial matches
     _annotationToNag.forEach((symbol, nag) {
       if (clean.contains(symbol)) {
         clean = clean.replaceAll(symbol, '');
         nags.add(nag);
       }
     });
+
+    // Restore promotion suffix
+    if (promotionSuffix != null) {
+      clean = clean.replaceFirst('\x00PROMO\x00', promotionSuffix);
+    }
 
     return (clean: clean.trim(), nags: nags);
   }
