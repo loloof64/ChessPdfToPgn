@@ -1,0 +1,17 @@
+{
+  "color_method": "heuristic",
+  "color_thresholds": {
+    "very_dark_empty": 0.02,
+    "very_dark_black": 0.1
+  },
+  "type_classes": [
+    "K",
+    "Q",
+    "R",
+    "B",
+    "N",
+    "P"
+  ],
+  "img_size": 64,
+  "version": "5.0"
+}

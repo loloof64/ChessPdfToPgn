@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:dartcv4/dartcv.dart' as cv;
 
 import '../../core/models/chess_game.dart';
 import '../../core/models/game_extraction_config.dart';
@@ -12,6 +13,7 @@ import '../../core/models/page_layout.dart';
 import '../../core/services/opencv_service.dart';
 import '../../core/services/page_analyzer.dart';
 import '../../core/services/tesseract_service.dart';
+import '../../core/services/diagram_classifier.dart';
 import '../../features/config/config_screen.dart';
 import '../../features/export/pgn_serializer.dart';
 import '../../features/processing/pgn_parser.dart';
@@ -241,9 +243,38 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
           // Normal block processing
           switch (block) {
             case DiagramBlock():
-              if (!gameStarted && block.fen != null) {
-                pendingTexts.add('[FEN "${block.fen}"]');
-                gameStarted = true;
+              // Only the first diagram per game is used (start position).
+              // Subsequent diagrams are mid-game illustrations and are ignored.
+              if (!gameStarted) {
+                try {
+                  final boardImg = await cv.imreadAsync(
+                    path,
+                    flags: cv.IMREAD_COLOR,
+                  );
+
+                  // Warp board to flat 800×800 grid before classification
+                  final board800 = await cv.resizeAsync(boardImg, (800, 800));
+
+                  final classifier = DiagramClassifier();
+                  await classifier.init();
+
+                  final fen = await classifier.boardToFen(board800);
+
+                  // Standard starting position does not need a FEN header
+                  const standardFen =
+                      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR';
+                  if (fen != standardFen) {
+                    pendingTexts.add('[FEN "$fen w KQkq - 0 1"]');
+                  }
+
+                  board800.dispose();
+                  boardImg.dispose();
+                  classifier.dispose();
+                  gameStarted = true;
+                } catch (e) {
+                  // Diagram could not be classified — continue without FEN header
+                  debugPrint('DiagramClassifier error: $e');
+                }
               }
 
             case HeaderBlock() when block.isGameHeader:
