@@ -27,8 +27,8 @@ class _ConfigScreenState extends State<ConfigScreen> {
     super.initState();
     final initial = widget.initialConfig;
     _locale = initial?.locale ?? NotationLocale.english;
-    _usesFigurine = initial?.usesFigurine ?? false;
-    _commentStyle = initial?.commentStyle ?? CommentStyle.braces;
+    _usesFigurine = initial?.usesFigurine ?? true;
+    _commentStyle = initial?.commentStyle ?? CommentStyle.mixed;
   }
 
   @override
@@ -80,8 +80,11 @@ class _ConfigScreenState extends State<ConfigScreen> {
               },
               child: Column(
                 children: [
-                  _RadioTile<bool>(value: false, label: 'Letters  (e.g. Nf3, Cf3, Sf3)'),
                   _RadioTile<bool>(value: true, label: 'Figurines  (e.g. ♘f3)'),
+                  _RadioTile<bool>(
+                    value: false,
+                    label: 'Letters  (e.g. Nf3, Cf3, Sf3)',
+                  ),
                 ],
               ),
             ),
@@ -100,9 +103,18 @@ class _ConfigScreenState extends State<ConfigScreen> {
               },
               child: Column(
                 children: [
-                  _RadioTile<CommentStyle>(value: CommentStyle.braces, label: 'Braces  { comment }'),
-                  _RadioTile<CommentStyle>(value: CommentStyle.parentheses, label: 'Parentheses  ( comment )'),
-                  _RadioTile<CommentStyle>(value: CommentStyle.mixed, label: 'Mixed  — auto-detect'),
+                  _RadioTile<CommentStyle>(
+                    value: CommentStyle.mixed,
+                    label: 'Mixed  — auto-detect',
+                  ),
+                  _RadioTile<CommentStyle>(
+                    value: CommentStyle.braces,
+                    label: 'Braces  { comment }',
+                  ),
+                  _RadioTile<CommentStyle>(
+                    value: CommentStyle.parentheses,
+                    label: 'Parentheses  ( comment )',
+                  ),
                 ],
               ),
             ),

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:chess_pdf_to_pgn/core/models/chess_move.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -65,7 +66,8 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
 
   void _rebuildServices() {
     _tesseract = TesseractService(
-      tessLang: _config.locale.tessLang,
+      // Use custom chess model when figurines are enabled
+      tessLang: _config.usesFigurine ? 'eng_chess' : _config.locale.tessLang,
       psm: PageSegMode.singleBlock,
     );
     _opencv = OpenCvService();
@@ -118,6 +120,30 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
 
     final path = result.files.single.path!;
     final ext = p.extension(path).toLowerCase();
+
+    // Ask user for extraction options before processing
+    if (!mounted) return;
+    final config = await showDialog<GameExtractionConfig>(
+      context: context,
+      builder: (context) => Dialog(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520, maxHeight: 600),
+          child: ConfigScreen(
+            initialConfig: _config,
+            onConfirmed: (config) => Navigator.of(context).pop(config),
+          ),
+        ),
+      ),
+    );
+
+    // User dismissed the dialog — cancel extraction
+    if (config == null) return;
+
+    // Update config and rebuild services with new settings
+    setState(() {
+      _config = config;
+      _rebuildServices();
+    });
 
     setState(() {
       _status = _ExtractionStatus.running;
@@ -189,6 +215,14 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       await File(outPath).writeAsBytes(pngBytes);
       image.dispose();
 
+      // DEBUG — save first page for visual inspection
+      if (i == 0) {
+        final debugPath =
+            '/home/${Platform.environment['USER']}/Documents/temp/chess_debug_page1.png';
+        await File(debugPath).writeAsBytes(pngBytes);
+        debugPrint('DEBUG: page 1 saved to $debugPath');
+      }
+
       imagePaths.add(outPath);
       debugPrint(
         'Rasterized page ${i + 1}: $outPath (${pngBytes.length} bytes)',
@@ -202,6 +236,107 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
   // ---------------------------------------------------------------------------
   // Page processing pipeline
   // ---------------------------------------------------------------------------
+
+  /// Corrects Tesseract misreadings of FAN chess glyphs (♘♗♖♕♔).
+  /// Only called when usesFigurine is true in the extraction config.
+  String _fixFanGlyphs(String text) {
+    // Remove narrative lines starting with move number + ellipsis + move
+    // e.g. "4,...exd5 leads to..." → these are commentary, not game moves
+    text = text.replaceAll(
+      RegExp(r'^\d+[,.]\.{2,3}[A-Za-z]\S+.*$', multiLine: true),
+      '',
+    );
+
+    return text
+        // Remove page header artifacts like "2/7"
+        .replaceAll(RegExp(r'^\d+/\d+\s+', multiLine: true), '')
+        // Knight with missing file letter: £6→Nf6, M3→Nf3
+        .replaceAllMapped(RegExp(r'£(\d)'), (m) => 'Nf${m.group(1)}')
+        .replaceAllMapped(RegExp(r'\bM(\d)\b'), (m) => 'Nf${m.group(1)}')
+        // Knight with file letter: OM6, A\e3, Ae3, Mf3, 4\xd5, @xc3, 2xf5
+        .replaceAllMapped(
+          RegExp(r'(?:OM|A\\?|Mf?|4\\?|@|£f?|2)([a-h]?[1-8]|x[a-h][1-8])'),
+          (m) {
+            final square = m.group(1)!;
+            if (RegExp(r'^\d').hasMatch(square)) return m.group(0)!;
+            return 'N$square';
+          },
+        )
+        // Bishop: &b4
+        .replaceAllMapped(
+          RegExp(r'&([a-h][1-8]|x[a-h][1-8])'),
+          (m) => 'B${m.group(1)}',
+        )
+        // Rook: Za1
+        .replaceAllMapped(
+          RegExp(r'Z([a-h][1-8]|x[a-h][1-8])'),
+          (m) => 'R${m.group(1)}',
+        )
+        // Queen: Wd3, Wwd3
+        .replaceAllMapped(
+          RegExp(r'Ww?([a-h][1-8]|x[a-h][1-8])'),
+          (m) => 'Q${m.group(1)}',
+        )
+        // Black move indicators
+        .replaceAll('wes', '...')
+        .replaceAll(RegExp(r'\bsa\b'), '...')
+        .replaceAll('ees', '...');
+  }
+
+  /// Reconstructs move pairs from Fischer-style tabular format.
+  /// Example: "1    d4    Nf6" → "1. d4 Nf6"
+  String _reconstructMoveTable(String text) {
+    final lines = text.split('\n');
+    final result = <String>[];
+
+    // SAN pattern covering both pawn moves (e4) and piece moves (Nf3, Bxe4)
+    const sanPat =
+        r'(?:[KQRBN][a-h]?[1-8]?x?)?[a-h]x?[a-h]?[1-8](?:=[QRBN])?[+#]?'
+        r'|O-O(?:-O)?[+#]?';
+
+    for (final line in lines) {
+      final trimmed = line.trim();
+
+      // Match: number + spaces + white_move + spaces + black_move
+      final tableMatch = RegExp(
+        '^(\\d+)\\s+($sanPat)\\s+($sanPat)\$',
+      ).firstMatch(trimmed);
+
+      if (tableMatch != null) {
+        final num = tableMatch.group(1);
+        final white = tableMatch.group(2);
+        final black = tableMatch.group(3);
+        result.add('$num. $white $black');
+        continue;
+      }
+
+      // Match: number + spaces + dots + spaces + black_move
+      final blackMatch = RegExp(
+        '^(\\d+)\\s+\\.{1,3}\\s+($sanPat)\$',
+      ).firstMatch(trimmed);
+
+      if (blackMatch != null) {
+        final num = blackMatch.group(1);
+        final black = blackMatch.group(2);
+        result.add('$num... $black');
+        continue;
+      }
+
+      // Match: number + spaces + single white move only
+      final whiteMatch = RegExp('^(\\d+)\\s+($sanPat)\$').firstMatch(trimmed);
+
+      if (whiteMatch != null) {
+        final num = whiteMatch.group(1);
+        final white = whiteMatch.group(2);
+        result.add('$num. $white');
+        continue;
+      }
+
+      result.add(line);
+    }
+
+    return result.join('\n');
+  }
 
   Future<void> _processPages(List<String> imagePaths) async {
     final total = imagePaths.length;
@@ -290,8 +425,22 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
             // Text block — preprocess + OCR
             case TextBlock():
               setState(() => _statusMsg = 'OCR — page ${i + 1} / $total…');
-              final preprocessed = await _opencv.preprocessBookPage(path);
-              final text = await _tesseract.extractText(preprocessed);
+              var text = await _tesseract.extractText(path);
+
+              // Apply FAN glyph corrections only when figurine notation is enabled
+              if (_config.usesFigurine) {
+                text = _fixFanGlyphs(text);
+              }
+
+              // Reconstruct tabular move format only when figurine notation is enabled
+              if (_config.usesFigurine) {
+                text = _reconstructMoveTable(text);
+              }
+
+              if (i == 0) {
+                debugPrint('=== FIXED OCR PAGE 1 ===\n$text\n=== END ===');
+              }
+
               if (text.isNotEmpty) {
                 pendingTexts.add(text);
                 gameStarted = true;
@@ -315,6 +464,16 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
   void _flushGame(List<String> textBlocks) {
     final rawText = textBlocks.join('\n');
     final game = _parser.parse(rawText);
+
+    // DEBUG — show parsed moves
+    debugPrint('=== PARSED MOVES ===');
+    for (final m in game.moves) {
+      debugPrint(
+        '  ${m.moveNumber}. ${m.color == PieceColor.white ? "W" : "B"} ${m.san}',
+      );
+    }
+    debugPrint('=== END PARSED ===');
+
     if (game.moves.isEmpty) return;
 
     // Validate moves through chess engine

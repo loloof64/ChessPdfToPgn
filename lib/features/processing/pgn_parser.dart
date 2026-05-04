@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../core/models/game_extraction_config.dart';
 import '../../core/models/chess_move.dart';
 import '../../core/models/chess_game.dart';
@@ -58,11 +60,16 @@ class PgnParser {
   }
 
   bool _looksLikeComment(String text) {
+    // If text contains move numbers (digit + dot), it's NOT a comment
+    // even if it starts with a narrative word
     final hasMoveNumber = RegExp(r'\d+\.').hasMatch(text);
-    final hasSanMove = _sanPattern.hasMatch(text);
-    return !hasMoveNumber && !hasSanMove;
-  }
+    if (hasMoveNumber) return false;
 
+    final hasSanMove = _sanPattern.hasMatch(text);
+    if (hasSanMove) return false;
+
+    return true;
+  }
   // ---------------------------------------------------------------------------
   // Core parser
   // ---------------------------------------------------------------------------
@@ -136,6 +143,7 @@ class PgnParser {
           color = token.value.contains('...')
               ? PieceColor.black
               : PieceColor.white;
+          debugPrint('MOVE_NUM: ${token.value} → color=${color.name}');
 
         // --------------------------------------------------------------------
         case _TokenType.move:
@@ -144,6 +152,10 @@ class PgnParser {
           final raw = token.value;
           final withNags = AnnotationParser.extract(raw);
           final san = _normalizePiece(withNags.clean);
+
+          debugPrint(
+            'MOVE: $san → color=${color.name}, moveNumber=$moveNumber',
+          );
 
           moves.add(
             ChessMove(
@@ -282,6 +294,10 @@ class PgnParser {
       // Move number — '1.' (white) or '1...' (black)
       final moveNumMatch = RegExp(r'\d+\.{1,3}').matchAsPrefix(text, i);
       if (moveNumMatch != null) {
+        final val = moveNumMatch.group(0)!;
+        debugPrint(
+          'MOVE_NUM TOKEN: "$val" contains...: ${val.contains("...")}',
+        );
         tokens.add(_Token(_TokenType.moveNumber, moveNumMatch.group(0)!));
         i = moveNumMatch.end;
         continue;
@@ -338,12 +354,15 @@ class PgnParser {
   // ---------------------------------------------------------------------------
 
   RegExp get _sanPattern {
-    // Build piece letters dynamically from locale config
+    // Always include both Unicode glyphs AND Latin letters for piece prefix
+    // because books may mix FAN glyphs (♘) with Latin letters (N) after OCR correction
+    const piecesLatin = 'KQRBN';
+    const piecesUnicode = '♔♕♖♗♘♚♛♜♝♞';
+
     final localPieces = config.usesFigurine
-        ? '♔♕♖♗♘♚♛♜♝♞'
+        ? '$piecesLatin$piecesUnicode' // both — OCR correction produces Latin
         : config.locale.pieceMap.keys.join();
 
-    // Annotation suffix: !!, ??, !?, ?!, !, ?
     const annotation = r'(?:!!|\?\?|!\?|\?!|!|\?)?';
 
     return RegExp(

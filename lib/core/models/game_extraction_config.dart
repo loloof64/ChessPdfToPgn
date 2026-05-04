@@ -59,6 +59,6 @@ class GameExtractionConfig {
   const GameExtractionConfig({
     required this.locale,
     required this.usesFigurine,
-    this.commentStyle = CommentStyle.braces,
+    this.commentStyle = CommentStyle.mixed,
   });
 }

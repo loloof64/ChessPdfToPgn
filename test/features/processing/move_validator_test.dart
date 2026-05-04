@@ -1,3 +1,4 @@
+import 'package:chess/chess.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chess_pdf_to_pgn/core/models/chess_game.dart';
 import 'package:chess_pdf_to_pgn/core/models/chess_move.dart';
@@ -81,6 +82,14 @@ void main() {
       );
       expect(result.isFullyValid, isTrue);
       expect(result.validMoves.length, 2);
+    });
+
+    test('DEBUG Ne3 legality after d4 Nf6 c4 e6', () {
+      final chess = Chess();
+      chess.move('d4');
+      chess.move('Nf6');
+      chess.move('c4');
+      chess.move('e6');
     });
   });
 

@@ -1,7 +1,7 @@
 Launching lib/main.dart on Linux in debug mode...
 Building Linux application...                                   
 ✓ Built build/linux/x64/debug/bundle/chess_pdf_to_pgn
-Syncing files to device Linux...                                   138ms
+Syncing files to device Linux...                                   121ms
 
 Flutter run key commands.
 r Hot reload. 🔥🔥🔥
@@ -11,8 +11,9 @@ d Detach (terminate "flutter run" but leave application running).
 c Clear the screen
 q Quit (terminate the application on the device).
 
-A Dart VM Service on Linux is available at: http://127.0.0.1:37817/4DpmeAIlMps=/
-The Flutter DevTools debugger and profiler on Linux is available at: http://127.0.0.1:37817/4DpmeAIlMps=/devtools/?uri=ws://127.0.0.1:37817/4DpmeAIlMps=/ws
+A Dart VM Service on Linux is available at: http://127.0.0.1:41823/-ZGamifR6WU=/
+The Flutter DevTools debugger and profiler on Linux is available at: http://127.0.0.1:41823/-ZGamifR6WU=/devtools/?uri=ws://127.0.0.1:41823/-ZGamifR6WU=/ws
+DEBUG: page 1 saved to /home/laurent/Documents/temp/chess_debug_page1.png
 Rasterized page 1: /tmp/chess_extractor_pages/page_0001.png (2197709 bytes)
 Rasterized page 2: /tmp/chess_extractor_pages/page_0002.png (3079986 bytes)
 Rasterized page 3: /tmp/chess_extractor_pages/page_0003.png (2533783 bytes)
@@ -21,3 +22,1218 @@ Rasterized page 5: /tmp/chess_extractor_pages/page_0005.png (2551603 bytes)
 Rasterized page 6: /tmp/chess_extractor_pages/page_0006.png (2674324 bytes)
 Rasterized page 7: /tmp/chess_extractor_pages/page_0007.png (1905613 bytes)
 Rasterized page 8: /tmp/chess_extractor_pages/page_0008.png (1803087 bytes)
+=== FIXED OCR PAGE 1 ===
+Reshevsky [u.s.A4.]- Fischer
+
+LOS ANGELES 1961: 5th Match Game
+SEMI-TARRASCH DEFENSE
+
+Sheer pyrotechnics
+
+Here, in probably the most exciting game of the match, Fischer,
+trying to win a Pawn, unwittingly triggers a series of “desperado”
+combinations which are brilliant and unorthodox. Pure tactics
+predominate for a period of ten moves (19 to 29). It is almost
+impossible to determine who is winning until Reshevsky emerges a
+clear exchange ahead. In the tricky ending that ensues Fischer
+obviously is fighting for a draw. But, once again, he has the clock
+as an ally.
+
+In time-pressure, trying to preserve his slim advantage, Reshevsky
+pluys ui uggressive une im wnicn riscner yinas a noie — enabling him
+
+to reverse their roles. Conscious of his newly acquired advantage,
+Fischer storms down the board with his K-side Pawns and overwhelms
+his opponent.
+
+1. d4 Nf6
+2. c4 e6
+
+3. Ne3 d5
+4. exd5
+
+This exchange variation, though insipid, has always been to
+Reshevsky’s taste.
+
+4... Nxd5
+
+5. Nf3
+
+Prematurely forceful is 5 e4 Nxc3 6 bxc3 c5 7 Nf3 cxd4 8 cxd4
+Bb4+ =,
+
+5... c5
+=== END ===
+MOVE_NUM TOKEN: "1." contains...: false
+MOVE_NUM TOKEN: "2." contains...: false
+MOVE_NUM TOKEN: "3." contains...: false
+MOVE_NUM TOKEN: "4." contains...: false
+MOVE_NUM TOKEN: "4..." contains...: true
+MOVE_NUM TOKEN: "5." contains...: false
+MOVE_NUM TOKEN: "5..." contains...: true
+MOVE_NUM: 1. → color=white
+MOVE: d4 → color=white, moveNumber=1
+MOVE: Nf6 → color=black, moveNumber=1
+MOVE_NUM: 2. → color=white
+MOVE: c4 → color=white, moveNumber=2
+MOVE: e6 → color=black, moveNumber=2
+MOVE_NUM: 3. → color=white
+MOVE: Ne3 → color=white, moveNumber=3
+MOVE: d5 → color=black, moveNumber=3
+MOVE_NUM: 4. → color=white
+MOVE: exd5 → color=white, moveNumber=4
+MOVE_NUM: 4... → color=black
+MOVE: Nxd5 → color=black, moveNumber=4
+MOVE_NUM: 5. → color=white
+MOVE: Nf3 → color=white, moveNumber=5
+MOVE: e4 → color=black, moveNumber=5
+MOVE: Nxc3 → color=white, moveNumber=6
+MOVE: bxc3 → color=black, moveNumber=6
+MOVE: c5 → color=white, moveNumber=7
+MOVE: Nf3 → color=black, moveNumber=7
+MOVE: cxd4 → color=white, moveNumber=8
+MOVE: cxd4 → color=black, moveNumber=8
+MOVE: Bb4+ → color=white, moveNumber=9
+MOVE_NUM: 5... → color=black
+MOVE: c5 → color=black, moveNumber=5
+=== PARSED MOVES ===
+  1. W d4
+  1. B Nf6
+  2. W c4
+  2. B e6
+  3. W Ne3
+  3. B d5
+  4. W exd5
+  4. B Nxd5
+  5. W Nf3
+  5. B e4
+  6. W Nxc3
+  6. B bxc3
+  7. W c5
+  7. B Nf3
+  8. W cxd4
+  8. B cxd4
+  9. W Bb4+
+  5. B c5
+=== END PARSED ===
+  Attempting correction for: Ne3
+  Legal moves: [c5, d5, a3, a4, b3, b4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nd2, Bd2, Be3, Bf4, Bg5, Bh6, Qc2, Qb3, Qa4, Qd2, Qd3, Kd2, Nf3, Nh3]
+  Attempting correction for: exd5
+  Legal moves: [c5, cxd5, Nb5, Nc2, Nb1, b3, b4, e3, e4, f3, f4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qc2, Qb3, Qa4+, Qd2, Qd3, Kd2, Nf3, Nh3]
+  Attempting correction for: e4
+  Legal moves: [Nd7, Nc6, Na6, Bd7, Qe7, Qf6, Qg5, Qh4, Qd7, Qd6, Ke7, Kd7, Be7, Bd6, Bc5, Bb4+, Bxa3, Rg8, a6, a5, b6, b5, c6, c5, f6, f5, g6, g5, h6, h5, e5, Nb6, Ne7, Nf6, Nf4, Ne3, Nc3, Nb4]
+  Attempting correction for: Nxc3
+  Legal moves: [Nd7, Nc6, Na6, Bd7, Qe7, Qf6, Qg5, Qh4, Qd7, Qd6, Ke7, Kd7, Be7, Bd6, Bc5, Bb4+, Bxa3, Rg8, a6, a5, b6, b5, c6, c5, f6, f5, g6, g5, h6, h5, e5, Nb6, Ne7, Nf6, Nf4, Ne3, Nc3, Nb4]
+  Attempting correction for: bxc3
+  Legal moves: [Nd7, Nc6, Na6, Bd7, Qe7, Qf6, Qg5, Qh4, Qd7, Qd6, Ke7, Kd7, Be7, Bd6, Bc5, Bb4+, Bxa3, Rg8, a6, a5, b6, b5, c6, c5, f6, f5, g6, g5, h6, h5, e5, Nb6, Ne7, Nf6, Nf4, Ne3, Nc3, Nb4]
+  Attempting correction for: Nf3
+  Legal moves: [dxc5, Nb5, Nc4, Nc2, Nb1, Ne5, Ng5, Nh4, Ng1, Nd2, b3, b4, e3, e4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qc2, Qb3, Qa4+, Qd2, Qd3, Kd2, Rg1]
+  Attempting correction for: cxd4
+  Legal moves: [dxc5, Nb5, Nc4, Nc2, Nb1, Ne5, Ng5, Nh4, Ng1, Nd2, b3, b4, e3, e4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qc2, Qb3, Qa4+, Qd2, Qd3, Kd2, Rg1]
+  Attempting correction for: cxd4
+  Legal moves: [dxc5, Nb5, Nc4, Nc2, Nb1, Ne5, Ng5, Nh4, Ng1, Nd2, b3, b4, e3, e4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qc2, Qb3, Qa4+, Qd2, Qd3, Kd2, Rg1]
+  Attempting correction for: Bb4+
+  Legal moves: [dxc5, Nb5, Nc4, Nc2, Nb1, Ne5, Ng5, Nh4, Ng1, Nd2, b3, b4, e3, e4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qc2, Qb3, Qa4+, Qd2, Qd3, Kd2, Rg1]
+  Attempting correction for: c5
+  Legal moves: [dxc5, Nb5, Nc4, Nc2, Nb1, Ne5, Ng5, Nh4, Ng1, Nd2, b3, b4, e3, e4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qc2, Qb3, Qa4+, Qd2, Qd3, Kd2, Rg1]
+Game "?": 10 invalid move(s) — accuracy: 50.0%
+  Move 3. Ne3 (raw: Ne3) — OCR error corrected → Na3
+  Move 4. exd5 (raw: exd5) — OCR error corrected → cxd5
+  Move 5. e4 (raw: e4) — Illegal move — no correction found
+  Move 6. Nxc3 (raw: Nxc3) — Illegal move — no correction found
+  Move 6. bxc3 (raw: bxc3) — Illegal move — no correction found
+  Move 7. Nf3 (raw: Nf3) — Illegal move — no correction found
+  Move 8. cxd4 (raw: cxd4) — Illegal move — no correction found
+  Move 8. cxd4 (raw: cxd4) — Illegal move — no correction found
+  Move 9. Bb4+ (raw: Bb4+) — Illegal move — no correction found
+  Move 5. c5 (raw: c5) — Illegal move — no correction found
+MOVE_NUM TOKEN: "24..." contains...: true
+MOVE: Qxe3 → color=white, moveNumber=1
+MOVE: Qxf4 → color=black, moveNumber=1
+MOVE: Qxb5 → color=white, moveNumber=2
+MOVE: Nxe6 → color=black, moveNumber=2
+MOVE: Qxb2 → color=white, moveNumber=3
+MOVE: Qh6 → color=black, moveNumber=3
+MOVE_NUM: 24... → color=black
+MOVE: Nxf5 → color=black, moveNumber=24
+MOVE: gxf5 → color=white, moveNumber=25
+MOVE: Qh8 → color=black, moveNumber=25
+MOVE: Qg5+ → color=white, moveNumber=26
+MOVE: Qxf5+ → color=black, moveNumber=26
+MOVE: fxe3 → color=white, moveNumber=27
+MOVE: Nxg2 → color=black, moveNumber=27
+MOVE: Nxg2 → color=white, moveNumber=28
+MOVE: Bxe4 → color=black, moveNumber=28
+MOVE: d6 → color=white, moveNumber=29
+MOVE: Nxe8 → color=black, moveNumber=29
+MOVE: a4 → color=white, moveNumber=30
+MOVE: c7 → color=black, moveNumber=30
+MOVE: a6 → color=white, moveNumber=31
+=== PARSED MOVES ===
+  1. W Qxe3
+  1. B Qxf4
+  2. W Qxb5
+  2. B Nxe6
+  3. W Qxb2
+  3. B Qh6
+  24. B Nxf5
+  25. W gxf5
+  25. B Qh8
+  26. W Qg5+
+  26. B Qxf5+
+  27. W fxe3
+  27. B Nxg2
+  28. W Nxg2
+  28. B Bxe4
+  29. W d6
+  29. B Nxe8
+  30. W a4
+  30. B c7
+  31. W a6
+=== END PARSED ===
+  Attempting correction for: Qxe3
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxf4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxb5
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nxe6
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxb2
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qh6
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nxf5
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: gxf5
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qh8
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qg5+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxf5+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: fxe3
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nxg2
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nxg2
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Bxe4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: d6
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nxe8
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: c7
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+Game "?": 18 invalid move(s) — accuracy: 10.0%
+  Move 1. Qxe3 (raw: Qxe3) — Illegal move — no correction found
+  Move 1. Qxf4 (raw: Qxf4) — Illegal move — no correction found
+  Move 2. Qxb5 (raw: Qxb5) — Illegal move — no correction found
+  Move 2. Nxe6 (raw: Nxe6) — Illegal move — no correction found
+  Move 3. Qxb2 (raw: Qxb2) — Illegal move — no correction found
+  Move 3. Qh6 (raw: Qh6!) — Illegal move — no correction found
+  Move 24. Nxf5 (raw: Nxf5!) — Illegal move — no correction found
+  Move 25. gxf5 (raw: gxf5) — Illegal move — no correction found
+  Move 25. Qh8 (raw: Qh8) — Illegal move — no correction found
+  Move 26. Qg5+ (raw: Qg5+) — Illegal move — no correction found
+  Move 26. Qxf5+ (raw: Qxf5+) — Illegal move — no correction found
+  Move 27. fxe3 (raw: fxe3) — Illegal move — no correction found
+  Move 27. Nxg2 (raw: Nxg2!) — Illegal move — no correction found
+  Move 28. Nxg2 (raw: Nxg2) — Illegal move — no correction found
+  Move 28. Bxe4 (raw: Bxe4) — Illegal move — no correction found
+  Move 29. d6 (raw: d6!) — Illegal move — no correction found
+  Move 29. Nxe8 (raw: Nxe8) — Illegal move — no correction found
+  Move 30. c7 (raw: c7) — Illegal move — no correction found
+MOVE_NUM TOKEN: "42..." contains...: true
+MOVE_NUM TOKEN: "43..." contains...: true
+MOVE_NUM TOKEN: "44..." contains...: true
+MOVE_NUM TOKEN: "46." contains...: false
+MOVE_NUM TOKEN: "48..." contains...: true
+MOVE_NUM TOKEN: "49..." contains...: true
+MOVE_NUM: 42... → color=black
+MOVE: g4 → color=black, moveNumber=42
+MOVE_NUM: 43... → color=black
+MOVE: g3+ → color=black, moveNumber=43
+MOVE: Ng1 → color=white, moveNumber=44
+MOVE_NUM: 44... → color=black
+MOVE: Na2 → color=black, moveNumber=44
+MOVE: Nf3 → color=white, moveNumber=45
+MOVE: b6 → color=black, moveNumber=45
+MOVE: d2 → color=white, moveNumber=46
+MOVE: a7 → color=black, moveNumber=46
+MOVE: Nf2 → color=white, moveNumber=47
+MOVE: a8 → color=black, moveNumber=47
+MOVE: f1 → color=white, moveNumber=48
+MOVE: g3+ → color=black, moveNumber=48
+MOVE: Ba2+ → color=white, moveNumber=49
+MOVE: Nf3 → color=black, moveNumber=49
+MOVE_NUM: 46. → color=white
+MOVE: Be2 → color=white, moveNumber=46
+MOVE: g2 → color=black, moveNumber=46
+MOVE: Bg8 → color=white, moveNumber=47
+MOVE: b7 → color=black, moveNumber=47
+MOVE_NUM: 48... → color=black
+MOVE: Nb6 → color=black, moveNumber=48
+MOVE: Bxf4 → color=white, moveNumber=49
+MOVE: b7 → color=black, moveNumber=49
+MOVE: e1 → color=white, moveNumber=50
+MOVE_NUM: 49... → color=black
+MOVE: Ne4 → color=black, moveNumber=49
+MOVE: b8 → color=white, moveNumber=50
+MOVE: g1 → color=black, moveNumber=50
+=== PARSED MOVES ===
+  42. B g4
+  43. B g3+
+  44. W Ng1
+  44. B Na2
+  45. W Nf3
+  45. B b6
+  46. W d2
+  46. B a7
+  47. W Nf2
+  47. B a8
+  48. W f1
+  48. B g3+
+  49. W Ba2+
+  49. B Nf3
+  46. W Be2
+  46. B g2
+  47. W Bg8
+  47. B b7
+  48. B Nb6
+  49. W Bxf4
+  49. B b7
+  50. W e1
+  49. B Ne4
+  50. W b8
+  50. B g1
+=== END PARSED ===
+  Attempting correction for: g3+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Ng1
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Na2
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: d2
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: a7
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: Nf2
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: a8
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: f1
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: g3+
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: Ba2+
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: Nf3
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: Be2
+  Legal moves: [Rb8, Bb7, Nh6, Nf6, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4, b5]
+  Attempting correction for: g2
+  Legal moves: [Rb8, Bb7, Nh6, Nf6, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4, b5]
+  Attempting correction for: Bg8
+  Legal moves: [Rb8, Bb7, Nh6, Nf6, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4, b5]
+  Attempting correction for: b7
+  Legal moves: [Rb8, Bb7, Nh6, Nf6, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4, b5]
+  Attempting correction for: Nb6
+  Legal moves: [Rb8, Bb7, Nh6, Nf6, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4, b5]
+  Attempting correction for: Bxf4
+  Legal moves: [g5, Nb5, Nc4, Nb1, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Rb1, Bg2, Bh3, Rg1]
+  Attempting correction for: b7
+  Legal moves: [g5, Nb5, Nc4, Nb1, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Rb1, Bg2, Bh3, Rg1]
+  Attempting correction for: e1
+  Legal moves: [g5, Nb5, Nc4, Nb1, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Rb1, Bg2, Bh3, Rg1]
+  Attempting correction for: Ne4
+  Legal moves: [g5, Nb5, Nc4, Nb1, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Rb1, Bg2, Bh3, Rg1]
+  Attempting correction for: b8
+  Legal moves: [Rb8, Bb7, Rg8, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, Nb8, Nc5, Nb4, b5, Ng8, Nxg4, Nf5]
+  Attempting correction for: g1
+  Legal moves: [Rb8, Bb7, Rg8, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, Nb8, Nc5, Nb4, b5, Ng8, Nxg4, Nf5]
+Game "?": 22 invalid move(s) — accuracy: 24.1%
+  Move 43. g3+ (raw: g3+) — Illegal move — no correction found
+  Move 44. Ng1 (raw: Ng1) — Illegal move — no correction found
+  Move 44. Na2 (raw: Na2!) — OCR error corrected → Na6
+  Move 46. d2 (raw: d2) — Illegal move — no correction found
+  Move 46. a7 (raw: a7) — Illegal move — no correction found
+  Move 47. Nf2 (raw: Nf2) — Illegal move — no correction found
+  Move 47. a8 (raw: a8) — Illegal move — no correction found
+  Move 48. f1 (raw: f1) — Illegal move — no correction found
+  Move 48. g3+ (raw: g3+) — Illegal move — no correction found
+  Move 49. Ba2+ (raw: Ba2+) — Illegal move — no correction found
+  Move 49. Nf3 (raw: Nf3) — OCR error corrected → Na3
+  Move 46. Be2 (raw: Be2) — Illegal move — no correction found
+  Move 46. g2 (raw: g2) — Illegal move — no correction found
+  Move 47. Bg8 (raw: Bg8) — Illegal move — no correction found
+  Move 47. b7 (raw: b7) — Illegal move — no correction found
+  Move 48. Nb6 (raw: Nb6) — OCR error corrected → Nh6
+  Move 49. Bxf4 (raw: Bxf4) — Illegal move — no correction found
+  Move 49. b7 (raw: b7) — Illegal move — no correction found
+  Move 50. e1 (raw: e1) — Illegal move — no correction found
+  Move 49. Ne4 (raw: Ne4!) — OCR error corrected → Nc4
+  Move 50. b8 (raw: b8) — Illegal move — no correction found
+  Move 50. g1 (raw: g1) — Illegal move — no correction found
+MOVE_NUM TOKEN: "49..." contains...: true
+MOVE_NUM TOKEN: "53..." contains...: true
+MOVE_NUM: 49... → color=black
+MOVE: g1 → color=black, moveNumber=49
+MOVE: Qa8+ → color=white, moveNumber=50
+MOVE: Qe3+ → color=black, moveNumber=50
+MOVE_NUM: 53... → color=black
+MOVE: Qd4 → color=black, moveNumber=53
+MOVE: Qg3+ → color=white, moveNumber=54
+MOVE: Nd4 → color=black, moveNumber=54
+MOVE: Qh8+ → color=white, moveNumber=55
+MOVE: Nc4 → color=black, moveNumber=55
+MOVE: Qc8+ → color=white, moveNumber=56
+MOVE: Qxe6+ → color=black, moveNumber=56
+MOVE: Qe4+ → color=white, moveNumber=57
+MOVE: Qd3+ → color=black, moveNumber=57
+MOVE: Qe3+ → color=white, moveNumber=58
+MOVE: Qb5+ → color=black, moveNumber=58
+MOVE: Qb2+ → color=white, moveNumber=59
+=== PARSED MOVES ===
+  49. B g1
+  50. W Qa8+
+  50. B Qe3+
+  53. B Qd4
+  54. W Qg3+
+  54. B Nd4
+  55. W Qh8+
+  55. B Nc4
+  56. W Qc8+
+  56. B Qxe6+
+  57. W Qe4+
+  57. B Qd3+
+  58. W Qe3+
+  58. B Qb5+
+  59. W Qb2+
+=== END PARSED ===
+  Attempting correction for: g1
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qa8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qe3+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qd4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qg3+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nd4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qh8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nc4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qc8+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Qxe6+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Qe4+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Qd3+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Qe3+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Qb5+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Qb2+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+Game "?": 15 invalid move(s) — accuracy: 6.3%
+  Move 49. g1 (raw: g1) — Illegal move — no correction found
+  Move 50. Qa8+ (raw: Qa8+) — Illegal move — no correction found
+  Move 50. Qe3+ (raw: Qe3+) — Illegal move — no correction found
+  Move 53. Qd4 (raw: Qd4) — Illegal move — no correction found
+  Move 54. Qg3+ (raw: Qg3+) — Illegal move — no correction found
+  Move 54. Nd4 (raw: Nd4) — Illegal move — no correction found
+  Move 55. Qh8+ (raw: Qh8+) — Illegal move — no correction found
+  Move 55. Nc4 (raw: Nc4) — OCR error corrected → Nc3
+  Move 56. Qc8+ (raw: Qc8+) — Illegal move — no correction found
+  Move 56. Qxe6+ (raw: Qxe6+) — Illegal move — no correction found
+  Move 57. Qe4+ (raw: Qe4+) — Illegal move — no correction found
+  Move 57. Qd3+ (raw: Qd3+) — Illegal move — no correction found
+  Move 58. Qe3+ (raw: Qe3+) — Illegal move — no correction found
+  Move 58. Qb5+ (raw: Qb5+) — Illegal move — no correction found
+  Move 59. Qb2+ (raw: Qb2+) — Illegal move — no correction found
+
+Performing hot restart...                                       
+Restarted application in 870ms.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DEBUG: page 1 saved to /home/laurent/Documents/temp/chess_debug_page1.png
+Rasterized page 1: /tmp/chess_extractor_pages/page_0001.png (3485197 bytes)
+Rasterized page 2: /tmp/chess_extractor_pages/page_0002.png (4792835 bytes)
+Rasterized page 3: /tmp/chess_extractor_pages/page_0003.png (3978386 bytes)
+Rasterized page 4: /tmp/chess_extractor_pages/page_0004.png (5009891 bytes)
+Rasterized page 5: /tmp/chess_extractor_pages/page_0005.png (4016646 bytes)
+Rasterized page 6: /tmp/chess_extractor_pages/page_0006.png (4196038 bytes)
+Rasterized page 7: /tmp/chess_extractor_pages/page_0007.png (2970255 bytes)
+Rasterized page 8: /tmp/chess_extractor_pages/page_0008.png (2847955 bytes)
+=== FIXED OCR PAGE 1 ===
+Reshevsky [U.S.A.] - Fischer
+
+LOS ANGELES 1961: 5th Match Game
+SEMI-TARRASCH DEFENSE
+
+Sheer pyrotechnics
+
+Here, in probably the most exciting game of the match, Fischer,
+trying to win a Pawn, unwittingly triggers a series of “desperado”
+combinations which are brilliant and unorthodox. Pure tactics
+predominate for a period of ten moves (19 to 29). It is almost
+impossible to determine who is winning until Reshevsky emerges a
+clear exchange ahead. In the tricky ending that ensues Fischer
+obviously is fighting for a draw. But, once again, he has the clock
+as an ally.
+
+In time-pressure, trying to preserve his slim advantage, Reshevsky
+pluys ul upgressive nme im wnicn riscner yinas a noie — enabling him
+
+to reverse their roles. Conscious of his newly acquired advantage,
+Fischer storms down the board with his K-side Pawns and overwhelms
+his opponent.
+
+d           d4                                  O46
+Z           c4                                   e6
+
+3. Ne3 d5
+4. exd5
+
+This exchange variation, though insipid, has always been to
+Reshevsky’s taste.
+
+4         ves                             “)xd5
+
+z         ANE3
+
+Prematurely forceful is 5 e4 Nxc3 6 bxc3 c5 7 Nf3 cxd4 8 cxd4
+Bb4+ =,
+
+5... c5
+=== END ===
+MOVE_NUM TOKEN: "3." contains...: false
+MOVE_NUM TOKEN: "4." contains...: false
+MOVE_NUM TOKEN: "5..." contains...: true
+MOVE: d4 → color=white, moveNumber=1
+MOVE: c4 → color=black, moveNumber=1
+MOVE: e6 → color=white, moveNumber=2
+MOVE_NUM: 3. → color=white
+MOVE: Ne3 → color=white, moveNumber=3
+MOVE: d5 → color=black, moveNumber=3
+MOVE_NUM: 4. → color=white
+MOVE: exd5 → color=white, moveNumber=4
+MOVE: e4 → color=black, moveNumber=4
+MOVE: Nxc3 → color=white, moveNumber=5
+MOVE: bxc3 → color=black, moveNumber=5
+MOVE: c5 → color=white, moveNumber=6
+MOVE: Nf3 → color=black, moveNumber=6
+MOVE: cxd4 → color=white, moveNumber=7
+MOVE: cxd4 → color=black, moveNumber=7
+MOVE: Bb4+ → color=white, moveNumber=8
+MOVE_NUM: 5... → color=black
+MOVE: c5 → color=black, moveNumber=5
+=== PARSED MOVES ===
+  1. W d4
+  1. B c4
+  2. W e6
+  3. W Ne3
+  3. B d5
+  4. W exd5
+  4. B e4
+  5. W Nxc3
+  5. B bxc3
+  6. W c5
+  6. B Nf3
+  7. W cxd4
+  7. B cxd4
+  8. W Bb4+
+  5. B c5
+=== END PARSED ===
+  Attempting correction for: c4
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Ne3
+  Legal moves: [d5, a3, a4, b3, b4, c3, c4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nd2, Bd2, Be3, Bf4, Bg5, Bh6, Qd2, Qd3, Kd2, Nf3, Nh3]
+  Attempting correction for: exd5
+  Legal moves: [Nb5, Nc4, Nb1, b3, b4, c3, c4, e3, e4, f3, f4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qd2, Qd3, Kd2, Nf3, Nh3]
+  Attempting correction for: Nxc3
+  Legal moves: [Nd7, Nc6, Na6, Bd7, Qe7, Qf6, Qg5, Qh4, Qd7, Qd6, Ke7, Kd7, Be7, Bd6, Bc5, Bb4+, Bxa3, Nh6, Nf6, Ne7, a6, a5, b6, b5, c6, c5, f6, f5, g6, g5, h6, h5, e5, dxe4]
+  Attempting correction for: bxc3
+  Legal moves: [Nd7, Nc6, Na6, Bd7, Qe7, Qf6, Qg5, Qh4, Qd7, Qd6, Ke7, Kd7, Be7, Bd6, Bc5, Bb4+, Bxa3, Nh6, Nf6, Ne7, a6, a5, b6, b5, c6, c5, f6, f5, g6, g5, h6, h5, e5, dxe4]
+  Attempting correction for: cxd4
+  Legal moves: [e5, exd5, Nb5, Nc4, Nb1, Nxd4, Ne5, Ng5, Nh4, Ng1, Nd2, b3, b4, c3, c4, g3, g4, h3, h4, Rb1, Bd2, Be3, Bf4, Bg5, Bh6, Qd2, Qd3, Qxd4, Qe2, Kd2, Ke2, Be2, Bd3, Bc4, Bb5+, Ba6, Rg1]
+  Attempting correction for: c5
+  Legal moves: [c3, Bd2, Qd2, Ke2]
+Game "?": 7 invalid move(s) — accuracy: 58.8%
+  Move 1. c4 (raw: c4) — Illegal move — no correction found
+  Move 3. Ne3 (raw: Ne3) — OCR error corrected → Na3
+  Move 4. exd5 (raw: exd5) — Illegal move — no correction found
+  Move 5. Nxc3 (raw: Nxc3) — Illegal move — no correction found
+  Move 5. bxc3 (raw: bxc3) — Illegal move — no correction found
+  Move 7. cxd4 (raw: cxd4) — OCR error corrected → Nxd4
+  Move 5. c5 (raw: c5) — Illegal move — no correction found
+MOVE_NUM TOKEN: "7..." contains...: true
+MOVE_NUM TOKEN: "7..." contains...: true
+MOVE_NUM TOKEN: "9..." contains...: true
+MOVE_NUM TOKEN: "2." contains...: false
+MOVE_NUM TOKEN: "9." contains...: false
+MOVE_NUM TOKEN: "10." contains...: false
+MOVE_NUM TOKEN: "2." contains...: false
+MOVE: e3 → color=white, moveNumber=1
+MOVE_NUM: 7... → color=black
+MOVE: cxd4 → color=black, moveNumber=7
+MOVE: exd4 → color=white, moveNumber=8
+MOVE: 0-0 → color=black, moveNumber=8
+MOVE: 0-0 → color=white, moveNumber=9
+MOVE: a6 → color=black, moveNumber=9
+MOVE: Be7 → color=white, moveNumber=10
+MOVE_NUM: 7... → color=black
+MOVE: cxd4 → color=black, moveNumber=7
+MOVE: exd4 → color=white, moveNumber=8
+MOVE: h4 → color=black, moveNumber=8
+MOVE: 0-0 → color=white, moveNumber=1
+MOVE: Be4 → color=black, moveNumber=1
+MOVE_NUM: 9... → color=black
+MOVE_NUM: 2. → color=white
+MOVE: h5 → color=white, moveNumber=2
+MOVE: Nxd3+ → color=black, moveNumber=2
+MOVE: Qxd3 → color=white, moveNumber=3
+MOVE: h6 → color=black, moveNumber=3
+MOVE: hxg6 → color=white, moveNumber=4
+MOVE: hxg5 → color=black, moveNumber=4
+MOVE: Nxh8 → color=white, moveNumber=5
+MOVE: gxf7+ → color=black, moveNumber=5
+MOVE: Nxf7 → color=white, moveNumber=6
+MOVE: Bh7+ → color=black, moveNumber=6
+MOVE: d5 → color=white, moveNumber=7
+MOVE: 0-0 → color=black, moveNumber=7
+MOVE: 0-0 → color=white, moveNumber=8
+MOVE_NUM: 9. → color=white
+MOVE: a3 → color=white, moveNumber=9
+MOVE: exd4 → color=black, moveNumber=9
+MOVE_NUM: 10. → color=white
+MOVE: exd4 → color=white, moveNumber=10
+MOVE: exd4 → color=black, moveNumber=10
+MOVE: Qe2 → color=white, moveNumber=11
+MOVE: g6 → color=black, moveNumber=11
+MOVE: Bh6 → color=white, moveNumber=12
+MOVE: Qe2 → color=black, moveNumber=12
+MOVE: Nf5 → color=white, moveNumber=13
+MOVE: Nxd5 → color=black, moveNumber=13
+MOVE: Qxd5 → color=white, moveNumber=14
+MOVE: Qe2 → color=black, moveNumber=14
+MOVE: Nb7 → color=white, moveNumber=15
+MOVE: Nxh7+ → color=black, moveNumber=15
+MOVE: Nh8 → color=white, moveNumber=16
+MOVE: Nxd4 → color=black, moveNumber=16
+MOVE: Nxd5 → color=white, moveNumber=17
+MOVE: Nxc2 → color=black, moveNumber=17
+MOVE: Bxb7 → color=white, moveNumber=18
+MOVE: Bxa8 → color=black, moveNumber=18
+MOVE: f6 → color=white, moveNumber=19
+MOVE_NUM: 2. → color=white
+MOVE: Be3 → color=white, moveNumber=2
+MOVE: Qe2 → color=black, moveNumber=2
+=== PARSED MOVES ===
+  1. W e3
+  7. B cxd4
+  8. W exd4
+  8. B 0-0
+  9. W 0-0
+  9. B a6
+  10. W Be7
+  7. B cxd4
+  8. W exd4
+  8. B h4
+  2. W h5
+  2. B Nxd3+
+  3. W Qxd3
+  3. B h6
+  4. W hxg6
+  4. B hxg5
+  5. W Nxh8
+  5. B gxf7+
+  6. W Nxf7
+  6. B Bh7+
+  7. W d5
+  7. B 0-0
+  8. W 0-0
+  9. W a3
+  9. B exd4
+  10. W exd4
+  10. B exd4
+  11. W Qe2
+  11. B g6
+  12. W Bh6
+  12. B Qe2
+  13. W Nf5
+  13. B Nxd5
+  14. W Qxd5
+  14. B Qe2
+  15. W Nb7
+  15. B Nxh7+
+  16. W Nh8
+  16. B Nxd4
+  17. W Nxd5
+  17. B Nxc2
+  18. W Bxb7
+  18. B Bxa8
+  19. W f6
+  2. W Be3
+  2. B Qe2
+=== END PARSED ===
+  Attempting correction for: cxd4
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: exd4
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: 0-0
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: 0-0
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Be7
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Qe2, Qf3, Qg4, Qh5, Ke2, Be2, Bd3, Bc4, Bb5, Bxa6, Ne2, Nf3, Nh3]
+  Attempting correction for: cxd4
+  Legal moves: [Ra7, Nc6, Nh6, Nf6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, a5]
+  Attempting correction for: exd4
+  Legal moves: [Ra7, Nc6, Nh6, Nf6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, a5]
+  Attempting correction for: h4
+  Legal moves: [Ra7, Nc6, Nh6, Nf6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, a5]
+  Attempting correction for: Nxd3+
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: Qxd3
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: h6
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: hxg6
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: hxg5
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: Nxh8
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: gxf7+
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: Nxf7
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: Bh7+
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: d5
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: 0-0
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: 0-0
+  Legal moves: [e4, a3, a4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Na3, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: exd4
+  Legal moves: [Ra7, Nc6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, a5, h4]
+  Attempting correction for: exd4
+  Legal moves: [Ra7, Nc6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, a5, h4]
+  Attempting correction for: exd4
+  Legal moves: [Ra7, Nc6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, a5, h4]
+  Attempting correction for: Qe2
+  Legal moves: [Ra7, Nc6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, a5, h4]
+  Attempting correction for: Bh6
+  Legal moves: [a4, e4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Ra2, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: Qe2
+  Legal moves: [a4, e4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Ra2, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: Nf5
+  Legal moves: [a4, e4, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf3, Bg4, Bxh5, Bf1, f3, f4, g3, g4, h3, h4, Ra2, Nc3, Kf1, Nf3, Nh3]
+  Attempting correction for: Nxd5
+  Legal moves: [Ra7, Nc6, Bg7, Bh6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, a5, g5, h4]
+  Attempting correction for: Qxd5
+  Legal moves: [Ra7, Nc6, Bg7, Bh6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, a5, g5, h4]
+  Attempting correction for: Qe2
+  Legal moves: [Ra7, Nc6, Bg7, Bh6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, a5, g5, h4]
+  Attempting correction for: Nb7
+  Legal moves: [Ra7, Nc6, Bg7, Bh6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, a5, g5, h4]
+  Attempting correction for: Nxh7+
+  Legal moves: [Ra7, Nc6, Bg7, Bh6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, a5, g5, h4]
+  Attempting correction for: Nh8
+  Legal moves: [Ra7, Nc6, Bg7, Bh6, Nh6, Nf6, Rh7, Rh6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, a5, g5, h4]
+  Attempting correction for: Nxd4
+  Legal moves: [a4, e4, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf1, g3, g4, h3, h4, Ra2, Nc3, Kf1, Rg1, Rf1, O-O]
+  Attempting correction for: Nxd5
+  Legal moves: [a4, e4, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf1, g3, g4, h3, h4, Ra2, Nc3, Kf1, Rg1, Rf1, O-O]
+  Attempting correction for: Nxc2
+  Legal moves: [a4, e4, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf1, g3, g4, h3, h4, Ra2, Nc3, Kf1, Rg1, Rf1, O-O]
+  Attempting correction for: Bxb7
+  Legal moves: [a4, e4, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf1, g3, g4, h3, h4, Ra2, Nc3, Kf1, Rg1, Rf1, O-O]
+  Attempting correction for: Bxa8
+  Legal moves: [a4, e4, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, Bd3, Bc4, Bb5, Bxa6, Bf1, g3, g4, h3, h4, Ra2, Nc3, Kf1, Rg1, Rf1, O-O]
+  Attempting correction for: Be3
+  Legal moves: [Bxb7, Bb5, Bc4, Bd3, Be2, Bf1, a4, e4, Nd4, Ne5, Ng5, Nh4, Ng1, b3, b4, c3, c4, d3, d4, g3, g4, h3, h4, Ra2, Nc3, Qe2, Ke2, Kf1, Rg1, Rf1, O-O]
+  Attempting correction for: Qe2
+  Legal moves: [Ra7, Ra6, Ra5, Ra4, Rxa3, Nc6, Na6, Kf7, Bg7, Rh7, Rg8, b6, b5, c6, c5, d6, d5, e6, e5, f5, g5, Nf7, Ng8, Ng4, Nf5, h4]
+Game "?": 40 invalid move(s) — accuracy: 21.6%
+  Move 7. cxd4 (raw: cxd4) — Illegal move — no correction found
+  Move 8. exd4 (raw: exd4) — Illegal move — no correction found
+  Move 8. 0-0 (raw: 0-0) — Illegal move — no correction found
+  Move 9. 0-0 (raw: 0-0) — Illegal move — no correction found
+  Move 10. Be7 (raw: Be7) — OCR error corrected → Be2
+  Move 7. cxd4 (raw: cxd4) — Illegal move — no correction found
+  Move 8. exd4 (raw: exd4) — Illegal move — no correction found
+  Move 8. h4 (raw: h4!?) — Illegal move — no correction found
+  Move 2. Nxd3+ (raw: Nxd3+) — Illegal move — no correction found
+  Move 3. Qxd3 (raw: Qxd3) — Illegal move — no correction found
+  Move 3. h6 (raw: h6?) — Illegal move — no correction found
+  Move 4. hxg6 (raw: hxg6!) — Illegal move — no correction found
+  Move 4. hxg5 (raw: hxg5) — Illegal move — no correction found
+  Move 5. Nxh8 (raw: Nxh8) — Illegal move — no correction found
+  Move 5. gxf7+ (raw: gxf7+) — Illegal move — no correction found
+  Move 6. Nxf7 (raw: Nxf7) — Illegal move — no correction found
+  Move 6. Bh7+ (raw: Bh7+) — Illegal move — no correction found
+  Move 7. d5 (raw: d5!) — Illegal move — no correction found
+  Move 7. 0-0 (raw: 0-0) — Illegal move — no correction found
+  Move 8. 0-0 (raw: 0-0) — Illegal move — no correction found
+  Move 9. exd4 (raw: exd4) — Illegal move — no correction found
+  Move 10. exd4 (raw: exd4) — Illegal move — no correction found
+  Move 10. exd4 (raw: exd4) — Illegal move — no correction found
+  Move 11. Qe2 (raw: Qe2) — Illegal move — no correction found
+  Move 12. Bh6 (raw: Bh6) — Illegal move — no correction found
+  Move 12. Qe2 (raw: Qe2) — Illegal move — no correction found
+  Move 13. Nf5 (raw: Nf5) — OCR error corrected → Nf3
+  Move 13. Nxd5 (raw: Nxd5) — Illegal move — no correction found
+  Move 14. Qxd5 (raw: Qxd5) — Illegal move — no correction found
+  Move 14. Qe2 (raw: Qe2) — Illegal move — no correction found
+  Move 15. Nb7 (raw: Nb7!) — Illegal move — no correction found
+  Move 15. Nxh7+ (raw: Nxh7+) — Illegal move — no correction found
+  Move 16. Nh8 (raw: Nh8) — OCR error corrected → Nh6
+  Move 16. Nxd4 (raw: Nxd4) — Illegal move — no correction found
+  Move 17. Nxd5 (raw: Nxd5) — Illegal move — no correction found
+  Move 17. Nxc2 (raw: Nxc2) — Illegal move — no correction found
+  Move 18. Bxb7 (raw: Bxb7) — Illegal move — no correction found
+  Move 18. Bxa8 (raw: Bxa8) — OCR error corrected → Bxa6
+  Move 2. Be3 (raw: Be3) — OCR error corrected → Bd3
+  Move 2. Qe2 (raw: Qe2) — Illegal move — no correction found
+MOVE: Qxe3 → color=white, moveNumber=1
+MOVE: Qxf4 → color=black, moveNumber=1
+MOVE: Qxb5 → color=white, moveNumber=2
+MOVE: Nxe6 → color=black, moveNumber=2
+MOVE: Qxb2 → color=white, moveNumber=3
+MOVE: Qh6 → color=black, moveNumber=3
+MOVE: Bxf5 → color=white, moveNumber=4
+MOVE: gxf5 → color=black, moveNumber=4
+MOVE: Qh8 → color=white, moveNumber=5
+MOVE: Qg5+ → color=black, moveNumber=5
+MOVE: Qxf5+ → color=white, moveNumber=6
+MOVE: fxe3 → color=black, moveNumber=6
+MOVE: Ne4 → color=white, moveNumber=7
+MOVE: Bxe4 → color=black, moveNumber=7
+MOVE: d6 → color=white, moveNumber=8
+MOVE: Nf7 → color=black, moveNumber=8
+MOVE: Nxe8 → color=white, moveNumber=9
+MOVE: a4 → color=black, moveNumber=9
+MOVE: c7 → color=white, moveNumber=10
+=== PARSED MOVES ===
+  1. W Qxe3
+  1. B Qxf4
+  2. W Qxb5
+  2. B Nxe6
+  3. W Qxb2
+  3. B Qh6
+  4. W Bxf5
+  4. B gxf5
+  5. W Qh8
+  5. B Qg5+
+  6. W Qxf5+
+  6. B fxe3
+  7. W Ne4
+  7. B Bxe4
+  8. W d6
+  8. B Nf7
+  9. W Nxe8
+  9. B a4
+  10. W c7
+=== END PARSED ===
+  Attempting correction for: Qxe3
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxf4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxb5
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nxe6
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxb2
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qh6
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Bxf5
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: gxf5
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qh8
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qg5+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxf5+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: fxe3
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Ne4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Bxe4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: d6
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nf7
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nxe8
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: a4
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: c7
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+Game "?": 19 invalid move(s) — accuracy: 5.0%
+  Move 1. Qxe3 (raw: Qxe3) — Illegal move — no correction found
+  Move 1. Qxf4 (raw: Qxf4) — Illegal move — no correction found
+  Move 2. Qxb5 (raw: Qxb5) — Illegal move — no correction found
+  Move 2. Nxe6 (raw: Nxe6) — Illegal move — no correction found
+  Move 3. Qxb2 (raw: Qxb2) — Illegal move — no correction found
+  Move 3. Qh6 (raw: Qh6!) — Illegal move — no correction found
+  Move 4. Bxf5 (raw: Bxf5!) — Illegal move — no correction found
+  Move 4. gxf5 (raw: gxf5) — Illegal move — no correction found
+  Move 5. Qh8 (raw: Qh8) — Illegal move — no correction found
+  Move 5. Qg5+ (raw: Qg5+) — Illegal move — no correction found
+  Move 6. Qxf5+ (raw: Qxf5+) — Illegal move — no correction found
+  Move 6. fxe3 (raw: fxe3) — Illegal move — no correction found
+  Move 7. Ne4 (raw: Ne4!) — Illegal move — no correction found
+  Move 7. Bxe4 (raw: Bxe4) — Illegal move — no correction found
+  Move 8. d6 (raw: d6!) — Illegal move — no correction found
+  Move 8. Nf7 (raw: Nf7) — OCR error corrected → Nf3
+  Move 9. Nxe8 (raw: Nxe8) — Illegal move — no correction found
+  Move 9. a4 (raw: a4!) — Illegal move — no correction found
+  Move 10. c7 (raw: c7) — Illegal move — no correction found
+MOVE_NUM TOKEN: "42..." contains...: true
+MOVE_NUM TOKEN: "43..." contains...: true
+MOVE_NUM TOKEN: "44..." contains...: true
+MOVE_NUM TOKEN: "44." contains...: false
+MOVE_NUM TOKEN: "48..." contains...: true
+MOVE_NUM TOKEN: "49..." contains...: true
+MOVE_NUM: 42... → color=black
+MOVE: g4 → color=black, moveNumber=42
+MOVE_NUM: 43... → color=black
+MOVE: g3+ → color=black, moveNumber=43
+MOVE: Ng1 → color=white, moveNumber=44
+MOVE_NUM: 44... → color=black
+MOVE: Na2 → color=black, moveNumber=44
+MOVE: b6 → color=white, moveNumber=45
+MOVE: d2 → color=black, moveNumber=45
+MOVE: Bxb1 → color=white, moveNumber=46
+MOVE: a7 → color=black, moveNumber=46
+MOVE: f2 → color=white, moveNumber=47
+MOVE: a8 → color=black, moveNumber=47
+MOVE: f1 → color=white, moveNumber=48
+MOVE_NUM: 44. → color=white
+MOVE: b6 → color=white, moveNumber=44
+MOVE: g3+ → color=black, moveNumber=44
+MOVE: Nf3 → color=white, moveNumber=45
+MOVE: e2 → color=black, moveNumber=45
+MOVE: Bxa6 → color=white, moveNumber=46
+MOVE: b7 → color=black, moveNumber=46
+MOVE_NUM: 48... → color=black
+MOVE: Nb6 → color=black, moveNumber=48
+MOVE: b7 → color=white, moveNumber=49
+MOVE_NUM: 49... → color=black
+MOVE: 8e4 → color=black, moveNumber=49
+MOVE: b8 → color=white, moveNumber=50
+MOVE: g1 → color=black, moveNumber=50
+=== PARSED MOVES ===
+  42. B g4
+  43. B g3+
+  44. W Ng1
+  44. B Na2
+  45. W b6
+  45. B d2
+  46. W Bxb1
+  46. B a7
+  47. W f2
+  47. B a8
+  48. W f1
+  44. W b6
+  44. B g3+
+  45. W Nf3
+  45. B e2
+  46. W Bxa6
+  46. B b7
+  48. B Nb6
+  49. W b7
+  49. B 8e4
+  50. W b8
+  50. B g1
+=== END PARSED ===
+  Attempting correction for: g3+
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Ng1
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: Na2
+  Legal moves: [Nc6, Na6, Nh6, Nf6, a6, a5, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5]
+  Attempting correction for: b6
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: d2
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: Bxb1
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: a7
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: f2
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: a8
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: f1
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: b6
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: g3+
+  Legal moves: [g5, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, h3, h4, Na3, Nc3, Bg2, Bh3, Nf3, Nh3]
+  Attempting correction for: e2
+  Legal moves: [Rb8, Nh6, Nf6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4]
+  Attempting correction for: Bxa6
+  Legal moves: [Rb8, Nh6, Nf6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4]
+  Attempting correction for: b7
+  Legal moves: [Rb8, Nh6, Nf6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4]
+  Attempting correction for: Nb6
+  Legal moves: [Rb8, Nh6, Nf6, b6, b5, c6, c5, d6, d5, e6, e5, f6, f5, g6, g5, h6, h5, Nb8, Nc5, Nb4]
+  Attempting correction for: b7
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: 8e4
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: b8
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+  Attempting correction for: g1
+  Legal moves: [g5, Nd4, Ne5, Ng5, Nh4, Ng1, a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, h3, h4, Na3, Nc3, Bg2, Bh3, Rg1]
+Game "?": 20 invalid move(s) — accuracy: 16.7%
+  Move 43. g3+ (raw: g3+) — Illegal move — no correction found
+  Move 44. Ng1 (raw: Ng1) — Illegal move — no correction found
+  Move 44. Na2 (raw: Na2!) — OCR error corrected → Na6
+  Move 45. b6 (raw: b6) — Illegal move — no correction found
+  Move 45. d2 (raw: d2) — Illegal move — no correction found
+  Move 46. Bxb1 (raw: Bxb1) — Illegal move — no correction found
+  Move 46. a7 (raw: a7) — Illegal move — no correction found
+  Move 47. f2 (raw: f2) — Illegal move — no correction found
+  Move 47. a8 (raw: a8) — Illegal move — no correction found
+  Move 48. f1 (raw: f1) — Illegal move — no correction found
+  Move 44. b6 (raw: b6) — Illegal move — no correction found
+  Move 44. g3+ (raw: g3+) — Illegal move — no correction found
+  Move 45. e2 (raw: e2) — Illegal move — no correction found
+  Move 46. Bxa6 (raw: Bxa6) — Illegal move — no correction found
+  Move 46. b7 (raw: b7) — Illegal move — no correction found
+  Move 48. Nb6 (raw: Nb6) — OCR error corrected → Nh6
+  Move 49. b7 (raw: b7) — Illegal move — no correction found
+  Move 49. 8e4 (raw: 8e4!) — Illegal move — no correction found
+  Move 50. b8 (raw: b8) — Illegal move — no correction found
+  Move 50. g1 (raw: g1) — Illegal move — no correction found
+MOVE_NUM TOKEN: "49..." contains...: true
+MOVE_NUM TOKEN: "53." contains...: false
+MOVE_NUM: 49... → color=black
+MOVE: g1 → color=black, moveNumber=49
+MOVE: b8 → color=white, moveNumber=50
+MOVE: Qa8+ → color=black, moveNumber=50
+MOVE: Qf3+ → color=white, moveNumber=51
+MOVE: Nd4 → color=black, moveNumber=51
+MOVE_NUM: 53. → color=white
+MOVE: Qd8+ → color=white, moveNumber=53
+MOVE: Qh8+ → color=black, moveNumber=53
+MOVE: Bc4 → color=white, moveNumber=54
+MOVE: Qxe6+ → color=black, moveNumber=54
+MOVE: Qd3+ → color=white, moveNumber=55
+MOVE: Qe3 → color=black, moveNumber=55
+MOVE: Qd2+ → color=white, moveNumber=56
+MOVE: Nb5+ → color=black, moveNumber=56
+MOVE: Qb2+ → color=white, moveNumber=57
+=== PARSED MOVES ===
+  49. B g1
+  50. W b8
+  50. B Qa8+
+  51. W Qf3+
+  51. B Nd4
+  53. W Qd8+
+  53. B Qh8+
+  54. W Bc4
+  54. B Qxe6+
+  55. W Qd3+
+  55. B Qe3
+  56. W Qd2+
+  56. B Nb5+
+  57. W Qb2+
+=== END PARSED ===
+  Attempting correction for: g1
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: b8
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qa8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qf3+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nd4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qd8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qh8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Bc4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxe6+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qd3+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qe3
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qd2+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nb5+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qb2+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+MOVE_NUM TOKEN: "49..." contains...: true
+MOVE_NUM TOKEN: "53." contains...: false
+MOVE_NUM: 49... → color=black
+MOVE: g1 → color=black, moveNumber=49
+MOVE: b8 → color=white, moveNumber=50
+MOVE: Qa8+ → color=black, moveNumber=50
+MOVE: Qf3+ → color=white, moveNumber=51
+MOVE: Nd4 → color=black, moveNumber=51
+MOVE_NUM: 53. → color=white
+MOVE: Qd8+ → color=white, moveNumber=53
+MOVE: Qh8+ → color=black, moveNumber=53
+MOVE: Bc4 → color=white, moveNumber=54
+MOVE: Qxe6+ → color=black, moveNumber=54
+MOVE: Qd3+ → color=white, moveNumber=55
+MOVE: Qe3 → color=black, moveNumber=55
+MOVE: Qd2+ → color=white, moveNumber=56
+MOVE: Nb5+ → color=black, moveNumber=56
+MOVE: Qb2+ → color=white, moveNumber=57
+=== PARSED MOVES ===
+  49. B g1
+  50. W b8
+  50. B Qa8+
+  51. W Qf3+
+  51. B Nd4
+  53. W Qd8+
+  53. B Qh8+
+  54. W Bc4
+  54. B Qxe6+
+  55. W Qd3+
+  55. B Qe3
+  56. W Qd2+
+  56. B Nb5+
+  57. W Qb2+
+=== END PARSED ===
+  Attempting correction for: g1
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: b8
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qa8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qf3+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nd4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qd8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qh8+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Bc4
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qxe6+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qd3+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qe3
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qd2+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Nb5+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]
+  Attempting correction for: Qb2+
+  Legal moves: [a3, a4, b3, b4, c3, c4, d3, d4, e3, e4, f3, f4, g3, g4, h3, h4, Na3, Nc3, Nf3, Nh3]

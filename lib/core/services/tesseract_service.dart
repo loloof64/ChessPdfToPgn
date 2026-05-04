@@ -55,6 +55,8 @@ class TesseractService {
       'txt',
       '-c',
       'preserve_interword_spaces=1',
+      '-c',
+      'tessedit_char_whitelist=',
     ];
 
     final result = await Process.run('tesseract', args);

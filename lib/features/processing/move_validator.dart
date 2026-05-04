@@ -1,4 +1,5 @@
 import 'package:chess/chess.dart' as ch;
+import 'package:flutter/cupertino.dart';
 import '../../core/models/chess_game.dart';
 import '../../core/models/chess_move.dart';
 
@@ -190,6 +191,10 @@ class MoveValidator {
         .moves({'verbose': false})
         .map((m) => m.toString())
         .toList();
+
+    // DEBUG
+    debugPrint('  Attempting correction for: $san');
+    debugPrint('  Legal moves: $legal');
 
     if (legal.isEmpty) return null;
 

@@ -65,8 +65,8 @@ class _TesseractGateState extends State<_TesseractGate> {
         return ExtractionScreen(
           config: const GameExtractionConfig(
             locale: NotationLocale.english,
-            usesFigurine: false,
-            commentStyle: CommentStyle.braces,
+            usesFigurine: true,
+            commentStyle: CommentStyle.mixed,
           ),
         );
       },

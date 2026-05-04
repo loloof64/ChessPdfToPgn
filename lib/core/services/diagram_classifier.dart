@@ -10,12 +10,12 @@ import 'package:path/path.dart' as p;
 // Models
 // ---------------------------------------------------------------------------
 
-enum PieceColor { empty, white, black }
+enum DiagramPieceColor { empty, white, black }
 
 enum PieceType { K, Q, R, B, N, P }
 
 class SquareContent {
-  final PieceColor color;
+  final DiagramPieceColor color;
   final PieceType? type; // null if empty
   final double confidence;
 
@@ -25,13 +25,13 @@ class SquareContent {
     required this.confidence,
   });
 
-  bool get isEmpty => color == PieceColor.empty;
+  bool get isEmpty => color == DiagramPieceColor.empty;
 
   /// Returns standard FEN character or '.' for empty.
   String get fenChar {
     if (isEmpty) return '.';
     final letter = type!.name; // 'K','Q','R','B','N','P'
-    return color == PieceColor.white ? letter : letter.toLowerCase();
+    return color == DiagramPieceColor.white ? letter : letter.toLowerCase();
   }
 
   @override
@@ -179,9 +179,9 @@ class DiagramClassifier {
 
     gray.dispose();
 
-    if (color == PieceColor.empty) {
+    if (color == DiagramPieceColor.empty) {
       return const SquareContent(
-        color: PieceColor.empty,
+        color: DiagramPieceColor.empty,
         type: null,
         confidence: 1.0,
       );
@@ -203,7 +203,7 @@ class DiagramClassifier {
   // ---------------------------------------------------------------------------
 
   /// Detects piece color using the ratio of very dark pixels in the center.
-  PieceColor _detectColor(cv.Mat graySquare) {
+  DiagramPieceColor _detectColor(cv.Mat graySquare) {
     final h = graySquare.rows;
     final w = graySquare.cols;
     final m = h ~/ 6;
@@ -223,9 +223,9 @@ class DiagramClassifier {
 
     final ratio = veryDark / total;
 
-    if (ratio < _emptyThreshold) return PieceColor.empty;
-    if (ratio > _blackThreshold) return PieceColor.black;
-    return PieceColor.white;
+    if (ratio < _emptyThreshold) return DiagramPieceColor.empty;
+    if (ratio > _blackThreshold) return DiagramPieceColor.black;
+    return DiagramPieceColor.white;
   }
 
   // ---------------------------------------------------------------------------
