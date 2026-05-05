@@ -12,14 +12,16 @@ import 'package:dartcv4/dartcv.dart' as cv;
 import '../../core/models/chess_game.dart';
 import '../../core/models/game_extraction_config.dart';
 import '../../core/models/page_layout.dart';
+import '../../core/models/ocr_line.dart';
 import '../../core/services/diagram_classifier.dart';
 import '../../core/services/opencv_service.dart';
 import '../../core/services/page_analyzer.dart';
 import '../../core/services/tesseract_service.dart';
 import '../../features/config/config_screen.dart';
 import '../../features/export/pgn_serializer.dart';
-import '../processing/move_validator.dart';
+import '../../features/processing/smart_pgn_parser.dart';
 import '../../features/processing/pgn_parser.dart';
+import '../processing/move_validator.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -42,6 +44,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
   late PgnParser _parser;
   final PgnSerializer _serializer = PgnSerializer();
   final MoveValidator _validator = MoveValidator();
+  final SmartPGNParser _smartParser = SmartPGNParser();
 
   // Config — mutable, updated via Settings
   late GameExtractionConfig _config;
@@ -66,8 +69,8 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
 
   void _rebuildServices() {
     _tesseract = TesseractService(
-      // Use custom chess model when figurines are enabled
-      tessLang: _config.usesFigurine ? 'eng' : _config.locale.tessLang,
+      // Use 'eng' for standard English (eng_chess not available)
+      tessLang: _config.locale.tessLang, // Use configured language
       psm: PageSegMode.singleBlock,
     );
     _opencv = OpenCvService();
@@ -187,7 +190,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       });
 
       final page = doc.pages[i];
-      const scale = 300 / 72.0;
+      const scale = 600 / 72.0;
       final fullWidth = (page.width * scale).round();
       final fullHeight = (page.height * scale).round();
 
@@ -425,27 +428,67 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
             // Text block — preprocess + OCR
             case TextBlock():
               setState(() => _statusMsg = 'OCR — page ${i + 1} / $total…');
-              var text = await _tesseract.extractText(path);
 
-              // Apply FAN glyph corrections only when figurine notation is enabled
-              if (_config.usesFigurine) {
-                text = _fixFanGlyphs(text);
+              // Step 1: Extract words WITH spatial coordinates
+              final words = await _tesseract.extractWords(path);
+
+              if (words.isEmpty) {
+                continue;
               }
 
-              // Reconstruct tabular move format only when figurine notation is enabled
+              // Step 2: Convert TesseractWord to OCRLine (spatial wrapper)
+              final ocrLines = words
+                  .map(
+                    (w) => OCRLine(
+                      text: w.text,
+                      x: w.left,
+                      y: w.top,
+                      width: w.width,
+                      height: w.height,
+                      confidence: w.confidence,
+                    ),
+                  )
+                  .toList();
+
+              // Step 3: Use SmartPGNParser to extract moves and comments
+              // respecting spatial layout (columns, rows, etc.)
+              final extraction = _smartParser.extractMovesAndComments(ocrLines);
+
+              // Step 4: Reconstruct text from smart extraction
+              // Moves are already coherent (proper white/black pairing)
+              var text = extraction.moves.join(' ');
+
+              // Step 5: Apply post-processing (FAN glyphs, table reconstruction)
               if (_config.usesFigurine) {
+                text = _fixFanGlyphs(text);
                 text = _reconstructMoveTable(text);
               }
 
+              // Step 6: Log extraction (for debugging)
               if (i == 0) {
+                debugPrint('=== EXTRACTED MOVES (PAGE 1) ===');
+                debugPrint('Moves: ${extraction.moves.length}');
+                debugPrint(extraction.moves.join(" "));
+                debugPrint('=== EXTRACTED COMMENTS ===');
+                for (final comment in extraction.comments) {
+                  debugPrint('  {$comment}');
+                }
                 debugPrint('=== FIXED OCR PAGE 1 ===\n$text\n=== END ===');
               }
 
+              // Step 7: Add to pending texts
               if (text.isNotEmpty) {
                 pendingTexts.add(text);
                 gameStarted = true;
               }
 
+              // Step 8: Add extracted comments to pending texts
+              // They will be merged with moves during pgn_parser phase
+              for (final comment in extraction.comments) {
+                if (comment.isNotEmpty) {
+                  pendingTexts.add('{ $comment }');
+                }
+              }
             default:
               break;
           }
