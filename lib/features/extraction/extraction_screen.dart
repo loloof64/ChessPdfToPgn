@@ -67,7 +67,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
   void _rebuildServices() {
     _tesseract = TesseractService(
       // Use custom chess model when figurines are enabled
-      tessLang: _config.usesFigurine ? 'eng_chess' : _config.locale.tessLang,
+      tessLang: _config.usesFigurine ? 'eng' : _config.locale.tessLang,
       psm: PageSegMode.singleBlock,
     );
     _opencv = OpenCvService();
