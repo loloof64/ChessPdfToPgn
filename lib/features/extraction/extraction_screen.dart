@@ -157,8 +157,24 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
     });
 
     try {
+      final startTime = DateTime.now();
+      debugPrint('⏱️  Extraction started at ${startTime.toIso8601String()}');
+
       final imagePaths = ext == '.pdf' ? await _rasterizePdf(path) : [path];
+      final afterRasterize = DateTime.now();
+      final rasterizeMs = afterRasterize.difference(startTime).inMilliseconds;
+      debugPrint('⏱️  Rasterization: ${rasterizeMs}ms');
+
       await _processPages(imagePaths);
+      final afterProcess = DateTime.now();
+      final processMs = afterProcess.difference(afterRasterize).inMilliseconds;
+      debugPrint('⏱️  Page processing: ${processMs}ms');
+
+      final totalMs = afterProcess.difference(startTime).inMilliseconds;
+      debugPrint(
+        '⏱️  TOTAL TIME: ${totalMs}ms (${(totalMs / 1000).toStringAsFixed(2)}s)',
+      );
+
       setState(() => _status = _ExtractionStatus.done);
     } catch (e) {
       setState(() {
@@ -190,7 +206,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       });
 
       final page = doc.pages[i];
-      const scale = 300 / 72.0;
+      const scale = 1200 / 72.0;
       final fullWidth = (page.width * scale).round();
       final fullHeight = (page.height * scale).round();
 
@@ -701,14 +717,6 @@ class _EmptyState extends StatelessWidget {
                 : 'No games found in this document',
             style: Theme.of(context).textTheme.bodyLarge,
           ),
-          if (isIdle) ...[
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onPickFile,
-              icon: const Icon(Icons.file_open),
-              label: const Text('Open file'),
-            ),
-          ],
         ],
       ),
     );

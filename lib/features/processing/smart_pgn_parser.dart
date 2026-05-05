@@ -4,8 +4,7 @@ import '../../core/models/ocr_line.dart';
 /// Intelligent PGN parser that analyzes spatial layout and extracts chess moves
 /// while preserving book comments and ignoring position diagrams
 ///
-/// CRITICAL FIX: Groups individual OCR words into coherent TEXT LINES first,
-/// because extractWords() returns individual words, not pre-grouped lines.
+/// v3: Balanced approach with column detection but less aggressive filtering
 class SmartPGNParser {
   /// Tolerance for grouping words into same line (pixels)
   static const int _lineHeightTolerance = 15;
@@ -26,16 +25,7 @@ class SmartPGNParser {
     multiLine: true,
   );
 
-  /// Pattern to identify position diagram indicators
-  static final RegExp _diagramPattern = RegExp(
-    r'\b(?:diagram|position|fig\.?|figure|[♔♕♖♗♘♙♚♛♜♝♞♟]|[KQRBNkqrbn]\d{1,2})\b',
-    caseSensitive: false,
-  );
-
   /// PUBLIC ENTRY POINT: Extract chess moves and comments from OCR words
-  ///
-  /// INPUT: List of individual OCR words with coordinates
-  /// OUTPUT: PGNExtraction with properly paired moves and separated comments
   PGNExtraction extractMovesAndComments(List<OCRLine> ocrWords) {
     // STEP 1: Group individual words into coherent text lines
     final textLines = _groupWordsIntoLines(ocrWords);
@@ -44,44 +34,11 @@ class SmartPGNParser {
       '[SmartPGN] Grouped ${ocrWords.length} words into ${textLines.length} lines',
     );
 
-    // STEP 2: Analyze spatial layout of text lines
-    final groups = _analyzeLayout(textLines);
-
-    // STEP 3: Extract moves and comments from groups
+    // STEP 2: Process lines to extract moves and comments
     final moves = <String>[];
     final comments = <String>[];
 
-    for (final group in groups) {
-      // Check if this is a diagram line (ignore it)
-      if (_isLikelyDiagram(group)) {
-        debugPrint(
-          '[SmartPGN] Skipped diagram line: "${group.leftLines.map((l) => l.text).join(" ")}"',
-        );
-        continue;
-      }
-
-      // Extract chess notation from left side (white moves)
-      final leftText = group.leftLines.map((l) => l.text).join(' ');
-      if (leftText.isNotEmpty) {
-        _extractMovesFromText(leftText, moves, comments);
-      }
-
-      // Extract chess notation from right side (black moves)
-      final rightText = group.rightLines.map((l) => l.text).join(' ');
-      if (rightText.isNotEmpty) {
-        _extractMovesFromText(rightText, moves, comments);
-      }
-
-      // If only one column (likely a comment or narration), check for comments
-      if (group.leftLines.isEmpty || group.rightLines.isEmpty) {
-        final fullText = group.allLines.map((l) => l.text).join(' ');
-        if (!_looksLikeMoves(fullText) && fullText.isNotEmpty) {
-          // This is likely a comment
-          comments.add(fullText);
-          debugPrint('[SmartPGN] Added comment: "$fullText"');
-        }
-      }
-    }
+    _extractFromLines(textLines, moves, comments);
 
     debugPrint(
       '[SmartPGN] Extracted ${moves.length} moves and ${comments.length} comments',
@@ -95,7 +52,6 @@ class SmartPGNParser {
   // =========================================================================
 
   /// Group individual OCR words into coherent lines based on spatial proximity
-  /// This is CRITICAL because extractWords() returns individual words, not lines
   List<TextLine> _groupWordsIntoLines(List<OCRLine> ocrWords) {
     if (ocrWords.isEmpty) return [];
 
@@ -138,7 +94,6 @@ class SmartPGNParser {
 
   /// Create a TextLine from grouped OCR words
   TextLine _createTextLine(List<OCRLine> words) {
-    // Words are already sorted left-to-right
     final text = words.map((w) => w.text).join(' ');
     final minX = words.first.x;
     final maxX = words.last.right;
@@ -158,52 +113,89 @@ class SmartPGNParser {
   }
 
   // =========================================================================
-  // STEP 2: ANALYZE LAYOUT
+  // STEP 2: EXTRACT MOVES AND COMMENTS
   // =========================================================================
 
-  /// Analyze spatial layout of text lines and group into semantic units
-  List<LineGroup> _analyzeLayout(List<TextLine> textLines) {
-    if (textLines.isEmpty) return [];
+  /// Extract moves and comments from text lines
+  void _extractFromLines(
+    List<TextLine> textLines,
+    List<String> moves,
+    List<String> comments,
+  ) {
+    // Group lines by approximate row (same Y level)
+    final rowGroups = _groupLinesByRow(textLines);
 
-    final groups = <LineGroup>[];
-    final currentGroup = <TextLine>[];
-    int? currentRowY;
+    for (final rowLines in rowGroups) {
+      if (rowLines.isEmpty) continue;
 
-    for (final line in textLines) {
-      // Group lines that are on the same horizontal level
-      if (currentRowY != null &&
-          (line.y - currentRowY).abs() > _lineHeightTolerance) {
-        // New row detected
-        if (currentGroup.isNotEmpty) {
-          groups.add(_createLineGroup(currentGroup));
-          currentGroup.clear();
-        }
-        currentRowY = line.y;
-      } else {
-        currentRowY ??= line.y;
+      // Try to split into left/right columns
+      final (leftLines, rightLines) = _splitIntoColumns(rowLines);
+
+      // Extract moves from left column
+      if (leftLines.isNotEmpty) {
+        final leftText = leftLines.map((l) => l.text).join(' ');
+        _extractMovesFromText(leftText, moves, comments);
       }
 
-      currentGroup.add(line);
-    }
+      // Extract moves from right column (if exists and different from left)
+      if (rightLines.isNotEmpty && rightLines != leftLines) {
+        final rightText = rightLines.map((l) => l.text).join(' ');
+        _extractMovesFromText(rightText, moves, comments);
+      }
 
-    // Add the last group
-    if (currentGroup.isNotEmpty) {
-      groups.add(_createLineGroup(currentGroup));
+      // If only one column and no moves found, might be a comment
+      if ((leftLines.isEmpty || rightLines.isEmpty) &&
+          leftLines.isNotEmpty &&
+          rightLines.isEmpty) {
+        final fullText = leftLines.map((l) => l.text).join(' ');
+        if (!_looksLikeMoves(fullText) && fullText.isNotEmpty) {
+          comments.add(fullText);
+        }
+      }
     }
-
-    return groups;
   }
 
-  /// Create a line group from a set of lines on the same horizontal level
-  LineGroup _createLineGroup(List<TextLine> lines) {
+  /// Group lines by approximate vertical position
+  List<List<TextLine>> _groupLinesByRow(List<TextLine> textLines) {
+    if (textLines.isEmpty) return [];
+
+    final rows = <List<TextLine>>[];
+    var currentRow = <TextLine>[textLines[0]];
+    int currentRowY = textLines[0].y;
+
+    for (int i = 1; i < textLines.length; i++) {
+      final line = textLines[i];
+
+      if ((line.y - currentRowY).abs() <= _lineHeightTolerance) {
+        currentRow.add(line);
+      } else {
+        rows.add(currentRow);
+        currentRow = [line];
+        currentRowY = line.y;
+      }
+    }
+
+    if (currentRow.isNotEmpty) {
+      rows.add(currentRow);
+    }
+
+    return rows;
+  }
+
+  /// Split a row into left and right columns (or return all as left if single)
+  (List<TextLine>, List<TextLine>) _splitIntoColumns(List<TextLine> rowLines) {
+    if (rowLines.length == 1) {
+      return (rowLines, []);
+    }
+
     // Calculate center X
     final centerX =
-        lines.fold<int>(0, (sum, l) => sum + l.centerX) ~/ lines.length;
+        rowLines.fold<int>(0, (sum, l) => sum + l.centerX) ~/ rowLines.length;
 
     final leftLines = <TextLine>[];
     final rightLines = <TextLine>[];
 
-    for (final line in lines) {
+    for (final line in rowLines) {
       if (line.centerX < centerX) {
         leftLines.add(line);
       } else {
@@ -211,28 +203,19 @@ class SmartPGNParser {
       }
     }
 
-    return LineGroup(
-      allLines: lines,
-      leftLines: leftLines,
-      rightLines: rightLines,
-    );
+    return (leftLines, rightLines);
   }
 
-  // =========================================================================
-  // STEP 3: EXTRACT MOVES AND COMMENTS
-  // =========================================================================
-
-  /// Extract individual moves from text
+  /// Extract moves from text, collecting any non-move text as comments
   void _extractMovesFromText(
     String text,
     List<String> moves,
     List<String> comments,
   ) {
-    // Find all chess notation patterns
     final matches = _chessNotationPattern.allMatches(text);
 
     if (matches.isEmpty) {
-      // No moves found, might be a comment
+      // No moves found — might be a comment
       if (text.isNotEmpty && !_looksLikePageNumber(text)) {
         comments.add(text);
       }
@@ -241,7 +224,7 @@ class SmartPGNParser {
 
     int lastEnd = 0;
     for (final match in matches) {
-      // Extract any comment text between the last move and this move
+      // Extract text before move as potential comment
       final textBefore = text.substring(lastEnd, match.start).trim();
       if (textBefore.isNotEmpty && !_looksLikePageNumber(textBefore)) {
         comments.add(textBefore);
@@ -251,7 +234,7 @@ class SmartPGNParser {
       lastEnd = match.end;
     }
 
-    // Extract any trailing comment
+    // Extract trailing text
     if (lastEnd < text.length) {
       final trailing = text.substring(lastEnd).trim();
       if (trailing.isNotEmpty && !_looksLikePageNumber(trailing)) {
@@ -260,38 +243,17 @@ class SmartPGNParser {
     }
   }
 
-  /// Check if a line is likely a position diagram
-  bool _isLikelyDiagram(LineGroup group) {
-    final fullText = group.allLines.map((l) => l.text).join(' ');
-
-    // Check for diagram indicators
-    if (_diagramPattern.hasMatch(fullText)) {
-      return true;
-    }
-
-    // Check for coordinate-like patterns (a1, b2, etc.)
-    if (RegExp(r'\b[a-h][1-8]\b').hasMatch(fullText)) {
-      return true;
-    }
-
-    return false;
-  }
-
   /// Check if text looks like it contains chess moves
   bool _looksLikeMoves(String text) {
     return _chessNotationPattern.hasMatch(text);
   }
 
-  /// Check if text is likely a page number or header/footer
+  /// Check if text is likely a page number
   bool _looksLikePageNumber(String text) {
     final trimmed = text.trim();
-    if (trimmed.length > 20) return false; // Too long to be a page number
+    if (trimmed.length > 10) return false;
 
-    // Check for common page indicators
-    return RegExp(
-      r'^\d+$|^page\s+\d+|^\d+\s*\-\s*\d+$',
-      caseSensitive: false,
-    ).hasMatch(trimmed);
+    return RegExp(r'^\d+$|^page\s+\d+', caseSensitive: false).hasMatch(trimmed);
   }
 }
 
@@ -302,12 +264,12 @@ class SmartPGNParser {
 /// Represents a single line of text (grouped from multiple OCR words)
 class TextLine {
   final String text;
-  final int x; // Left position in pixels
-  final int y; // Top position in pixels
+  final int x;
+  final int y;
   final int width;
   final int height;
   final double confidence;
-  final List<OCRLine> words; // Original OCR words that compose this line
+  final List<OCRLine> words;
 
   const TextLine({
     required this.text,
@@ -329,31 +291,13 @@ class TextLine {
   int get right => x + width;
 
   @override
-  String toString() =>
-      'TextLine(text: "$text", x: $x, y: $y, conf: $confidence)';
-}
-
-/// Represents a horizontal line group (moves on the same row)
-class LineGroup {
-  final List<TextLine> allLines;
-  final List<TextLine> leftLines; // Usually white moves
-  final List<TextLine> rightLines; // Usually black moves
-
-  LineGroup({
-    required this.allLines,
-    required this.leftLines,
-    required this.rightLines,
-  });
-
-  @override
-  String toString() =>
-      'LineGroup(left: ${leftLines.length}, right: ${rightLines.length})';
+  String toString() => 'TextLine(text: "$text", x: $x, y: $y)';
 }
 
 /// Result of PGN extraction
 class PGNExtraction {
-  final List<String> moves; // Raw move strings (e.g., "1. d4", "Nf3")
-  final List<String> comments; // Book comments to include
+  final List<String> moves;
+  final List<String> comments;
 
   PGNExtraction({required this.moves, required this.comments});
 
