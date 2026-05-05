@@ -1,163 +1,20 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/models/game_extraction_config.dart';
-import 'core/services/tesseract_service.dart';
-import 'features/extraction/extraction_screen.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  pdfrxFlutterInitialize(dismissPdfiumWasmWarnings: true);
-  runApp(const ChessExtractorApp());
+void main() {
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-// ---------------------------------------------------------------------------
-// App root
-// ---------------------------------------------------------------------------
-
-class ChessExtractorApp extends StatelessWidget {
-  const ChessExtractorApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Chess Extractor',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(colorSchemeSeed: Colors.blueGrey, useMaterial3: true),
-      home: const _TesseractGate(),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Gate — checks Tesseract availability before entering the app
-// ---------------------------------------------------------------------------
-
-class _TesseractGate extends StatefulWidget {
-  const _TesseractGate();
-
-  @override
-  State<_TesseractGate> createState() => _TesseractGateState();
-}
-
-class _TesseractGateState extends State<_TesseractGate> {
-  late final Future<String?> _versionFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _versionFuture = TesseractService.detectVersion();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
-      future: _versionFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const _SplashScreen();
-        }
-        if (snapshot.data == null) {
-          return const _TesseractMissingScreen();
-        }
-        // Tesseract found — start directly with default config
-        return ExtractionScreen(
-          config: const GameExtractionConfig(
-            locale: NotationLocale.english,
-            usesFigurine: true,
-            commentStyle: CommentStyle.mixed,
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Splash screen
-// ---------------------------------------------------------------------------
-
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Checking Tesseract…'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Tesseract missing screen
-// ---------------------------------------------------------------------------
-
-class _TesseractMissingScreen extends StatelessWidget {
-  const _TesseractMissingScreen();
-
-  String get _installCommand => Platform.isWindows
-      ? 'winget install UB-Mannheim.TesseractOCR'
-      : 'sudo apt install tesseract-ocr tesseract-ocr-fra';
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(
-                  'Tesseract not found',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Tesseract OCR must be installed and available in your PATH.',
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Install command:',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: SelectableText(
-                    _installCommand,
-                    style: const TextStyle(fontFamily: 'monospace'),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'After installation, restart the application.',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-        ),
+      title: 'Chess PDF to PGN - Cloud OCR',
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Chess PDF to PGN')),
+        body: const Center(child: Text('Ready for OCR')),
       ),
     );
   }
