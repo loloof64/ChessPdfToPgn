@@ -53,12 +53,12 @@ enum CommentStyle {
 
 class GameExtractionConfig {
   final NotationLocale locale;
-  final bool usesFigurine; // true = FAN (♔), false = local letters
-  final CommentStyle commentStyle;
+  final bool usesFigurine; // Always true — automatic correction
+  final CommentStyle commentStyle; // Unused — kept for backward compat
 
   const GameExtractionConfig({
     required this.locale,
-    required this.usesFigurine,
-    this.commentStyle = CommentStyle.mixed,
+    this.usesFigurine = true, // Always apply figurine corrections
+    this.commentStyle = CommentStyle.mixed, // Auto-detected by SmartPGNParser
   });
 }

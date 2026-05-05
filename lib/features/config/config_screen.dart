@@ -19,16 +19,12 @@ class ConfigScreen extends StatefulWidget {
 
 class _ConfigScreenState extends State<ConfigScreen> {
   late NotationLocale _locale;
-  late bool _usesFigurine;
-  late CommentStyle _commentStyle;
 
   @override
   void initState() {
     super.initState();
     final initial = widget.initialConfig;
     _locale = initial?.locale ?? NotationLocale.english;
-    _usesFigurine = initial?.usesFigurine ?? true;
-    _commentStyle = initial?.commentStyle ?? CommentStyle.mixed;
   }
 
   @override
@@ -67,58 +63,6 @@ class _ConfigScreenState extends State<ConfigScreen> {
             ),
 
             const SizedBox(height: 24),
-
-            // ----------------------------------------------------------------
-            // Figurine mode
-            // ----------------------------------------------------------------
-            const _SectionLabel('Piece symbol style'),
-            const SizedBox(height: 8),
-            RadioGroup<bool>(
-              groupValue: _usesFigurine,
-              onChanged: (v) {
-                if (v != null) setState(() => _usesFigurine = v);
-              },
-              child: Column(
-                children: [
-                  _RadioTile<bool>(value: true, label: 'Figurines  (e.g. ♘f3)'),
-                  _RadioTile<bool>(
-                    value: false,
-                    label: 'Letters  (e.g. Nf3, Cf3, Sf3)',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ----------------------------------------------------------------
-            // Comment style
-            // ----------------------------------------------------------------
-            const _SectionLabel('Comment delimiter style'),
-            const SizedBox(height: 8),
-            RadioGroup<CommentStyle>(
-              groupValue: _commentStyle,
-              onChanged: (v) {
-                if (v != null) setState(() => _commentStyle = v);
-              },
-              child: Column(
-                children: [
-                  _RadioTile<CommentStyle>(
-                    value: CommentStyle.mixed,
-                    label: 'Mixed  — auto-detect',
-                  ),
-                  _RadioTile<CommentStyle>(
-                    value: CommentStyle.braces,
-                    label: 'Braces  { comment }',
-                  ),
-                  _RadioTile<CommentStyle>(
-                    value: CommentStyle.parentheses,
-                    label: 'Parentheses  ( comment )',
-                  ),
-                ],
-              ),
-            ),
-
             const Spacer(),
 
             // ----------------------------------------------------------------
@@ -141,13 +85,7 @@ class _ConfigScreenState extends State<ConfigScreen> {
   }
 
   void _confirm() {
-    widget.onConfirmed(
-      GameExtractionConfig(
-        locale: _locale,
-        usesFigurine: _usesFigurine,
-        commentStyle: _commentStyle,
-      ),
-    );
+    widget.onConfirmed(GameExtractionConfig(locale: _locale));
   }
 
   String _localeLabel(NotationLocale locale) => switch (locale) {
@@ -175,27 +113,6 @@ class _SectionLabel extends StatelessWidget {
       style: Theme.of(
         context,
       ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-    );
-  }
-}
-
-class _RadioTile<T> extends StatelessWidget {
-  final T value;
-  final String label;
-
-  const _RadioTile({required this.value, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => RadioGroup.maybeOf<T>(context)?.onChanged(value),
-      borderRadius: BorderRadius.circular(8),
-      child: Row(
-        children: [
-          Radio<T>(value: value),
-          Text(label),
-        ],
-      ),
     );
   }
 }
