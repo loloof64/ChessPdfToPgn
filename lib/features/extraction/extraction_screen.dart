@@ -18,7 +18,7 @@ import '../../core/services/page_analyzer.dart';
 import '../../core/services/tesseract_service.dart';
 import '../../features/config/config_screen.dart';
 import '../../features/export/pgn_serializer.dart';
-import '../../features/processing/move_validator.dart';
+import '../processing/move_validator.dart';
 import '../../features/processing/pgn_parser.dart';
 
 // ---------------------------------------------------------------------------

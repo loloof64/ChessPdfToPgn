@@ -1,0 +1,441 @@
+import 'package:chess/chess.dart' as ch;
+import 'package:flutter/cupertino.dart';
+import '../../core/models/chess_game.dart';
+import '../../core/models/chess_move.dart';
+
+// ---------------------------------------------------------------------------
+// Validation result
+// ---------------------------------------------------------------------------
+
+/// Result of a full game validation.
+class ValidationResult {
+  final List<ChessMove> validMoves;
+  final List<InvalidMove> invalidMoves;
+  final String finalFen;
+
+  bool get isFullyValid => invalidMoves.isEmpty;
+  double get accuracy {
+    final total = validMoves.length + invalidMoves.length;
+    return total == 0 ? 1.0 : validMoves.length / total;
+  }
+
+  const ValidationResult({
+    required this.validMoves,
+    required this.invalidMoves,
+    required this.finalFen,
+  });
+}
+
+/// A move that failed validation, with the reason and suggested correction.
+class InvalidMove {
+  final ChessMove move;
+  final String reason;
+  final String? suggestion;
+
+  const InvalidMove({
+    required this.move,
+    required this.reason,
+    this.suggestion,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Backtracking result
+// ---------------------------------------------------------------------------
+
+/// Result of a backtracking attempt for a single move
+class BacktrackingResult {
+  final String? selectedMove; // The move that was selected, or null if impossible
+  final bool requiresBacktrack; // Whether we need to go back further
+  final String? debugInfo; // Debug information about why backtracking was needed
+
+  const BacktrackingResult({
+    required this.selectedMove,
+    required this.requiresBacktrack,
+    this.debugInfo,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// MoveValidator with Backtracking
+// ---------------------------------------------------------------------------
+
+/// Validates a [ChessGame] by replaying all moves through the chess engine,
+/// with intelligent backtracking when OCR errors are detected.
+class MoveValidator {
+  // ---------------------------------------------------------------------------
+  // Configuration
+  // ---------------------------------------------------------------------------
+
+  /// How many moves ahead to look when validating a sequence
+  static const lookAheadDepth = 2;
+
+  /// Similarity threshold for OCR correction (0.0 to 1.0)
+  static const similarityThreshold = 0.6;
+
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
+
+  /// Validates a [ChessGame] with intelligent backtracking.
+  ///
+  /// Algorithm:
+  /// 1. For each OCR'd move, first try the literal interpretation
+  /// 2. If illegal, try to find a legal move that fits
+  /// 3. Look ahead to ensure the entire remaining sequence can be validated
+  /// 4. If look-ahead fails, backtrack and try other candidates
+  ValidationResult validate(ChessGame game) {
+    final chess = ch.Chess();
+
+    // Load custom start position if present
+    if (game.hasCustomStartPosition) {
+      final fen = game.headers['FEN']!;
+      final fenParts = fen.trim().split(' ');
+
+      if (fenParts.length != 6) {
+        return ValidationResult(
+          validMoves: [],
+          invalidMoves: game.moves
+              .map(
+                (m) => InvalidMove(
+                  move: m,
+                  reason: 'Invalid FEN: must have 6 space-delimited fields',
+                ),
+              )
+              .toList(),
+          finalFen: '',
+        );
+      }
+
+      final loaded = chess.load(fen);
+      if (!loaded) {
+        return ValidationResult(
+          validMoves: [],
+          invalidMoves: game.moves
+              .map((m) => InvalidMove(move: m, reason: 'Invalid FEN: $fen'))
+              .toList(),
+          finalFen: '',
+        );
+      }
+    }
+
+    final validMoves = <ChessMove>[];
+    final invalidMoves = <InvalidMove>[];
+
+    // Process all moves with backtracking
+    var moveIndex = 0;
+    while (moveIndex < game.moves.length) {
+      final move = game.moves[moveIndex];
+      final result = _processMove(
+        chess,
+        move,
+        game.moves,
+        moveIndex,
+      );
+
+      if (result.selectedMove != null) {
+        // Move was successfully validated (or corrected)
+        validMoves.add(
+          ChessMove(
+            moveNumber: move.moveNumber,
+            color: move.color,
+            san: result.selectedMove!,
+            rawOcr: move.rawOcr,
+            nags: move.nags,
+            commentBefore: move.commentBefore,
+            commentAfter: move.commentAfter,
+            variations: _validateVariations(move.variations, chess.fen),
+          ),
+        );
+
+        if (result.selectedMove != move.san) {
+          // Mark as corrected
+          invalidMoves.add(
+            InvalidMove(
+              move: move,
+              reason: 'OCR error corrected by backtracking',
+              suggestion: result.selectedMove,
+            ),
+          );
+        }
+
+        moveIndex++;
+      } else {
+        // No valid move found
+        invalidMoves.add(
+          InvalidMove(
+            move: move,
+            reason: 'No valid move found (backtracking failed)',
+          ),
+        );
+        moveIndex++;
+      }
+    }
+
+    return ValidationResult(
+      validMoves: validMoves,
+      invalidMoves: invalidMoves,
+      finalFen: chess.fen,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — move processing with backtracking
+  // ---------------------------------------------------------------------------
+
+  /// Process a single move with backtracking support.
+  ///
+  /// Returns the selected move (or null if impossible).
+  BacktrackingResult _processMove(
+    ch.Chess chess,
+    ChessMove move,
+    List<ChessMove> allMoves,
+    int moveIndex,
+  ) {
+    // First, try the literal move
+    final tempChess1 = ch.Chess.fromFEN(chess.fen);
+    final result = tempChess1.move(move.san);
+    if (result) {
+      // Literal move is legal - check if remaining moves are still solvable
+      if (_canValidateRemainingMoves(tempChess1, allMoves, moveIndex + 1)) {
+        chess.move(move.san);
+        debugPrint('✓ Move ${move.moveNumber} [${move.color.name}]: ${move.san} (literal)');
+        return BacktrackingResult(
+          selectedMove: move.san,
+          requiresBacktrack: false,
+        );
+      }
+      // Literal move is legal but blocks the rest - try alternatives
+      debugPrint('⚠ Move ${move.moveNumber} [${move.color.name}]: ${move.san} is legal but blocks remaining moves');
+    }
+
+    // Try to find a better candidate via backtracking
+    final candidates = _generateAndRankCandidates(chess, move.san);
+    for (final candidate in candidates) {
+      final tempChess2 = ch.Chess.fromFEN(chess.fen);
+      if (tempChess2.move(candidate)) {
+        // Candidate is legal - check if remaining moves are still solvable
+        if (_canValidateRemainingMoves(tempChess2, allMoves, moveIndex + 1)) {
+          chess.move(candidate);
+          debugPrint('✓ Move ${move.moveNumber} [${move.color.name}]: ${move.san} → $candidate (backtracking)');
+          return BacktrackingResult(
+            selectedMove: candidate,
+            requiresBacktrack: false,
+            debugInfo: 'Corrected via backtracking',
+          );
+        }
+        debugPrint('⚠ Candidate $candidate blocks remaining moves');
+      }
+    }
+
+    debugPrint('✗ Move ${move.moveNumber} [${move.color.name}]: No valid move found');
+    return BacktrackingResult(
+      selectedMove: null,
+      requiresBacktrack: true,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — lookahead validation
+  // ---------------------------------------------------------------------------
+
+  /// Check if the remaining moves can be validated.
+  ///
+  /// Uses a greedy lookahead: tries to play the next `lookAheadDepth` moves
+  /// to ensure the position doesn't get stuck.
+  bool _canValidateRemainingMoves(
+    ch.Chess chess,
+    List<ChessMove> allMoves,
+    int startIndex,
+  ) {
+    if (startIndex >= allMoves.length) return true; // No more moves
+
+    final tempChess = ch.Chess.fromFEN(chess.fen);
+    var depth = 0;
+
+    for (var i = startIndex; i < allMoves.length && depth < lookAheadDepth; i++) {
+      final nextMove = allMoves[i];
+      
+      // Try the literal move first
+      if (tempChess.move(nextMove.san)) {
+        depth++;
+        continue;
+      }
+
+      // Try to find any legal move that could work
+      final legalMoves = tempChess
+          .moves({'verbose': false})
+          .map((m) => m.toString())
+          .toList();
+
+      if (legalMoves.isEmpty) {
+        // Game is over or checkmate - check if this is the last move
+        if (i == allMoves.length - 1) {
+          return true; // Last move, game end is fine
+        }
+        return false; // Unexpected end - can't continue
+      }
+
+      // Find a candidate that might work
+      final candidates = _generateAndRankCandidates(tempChess, nextMove.san);
+      final found = candidates.firstWhere(
+        (c) => tempChess.move(c),
+        orElse: () => '',
+      );
+
+      if (found.isEmpty) {
+        // Can't find a move that works
+        return false;
+      }
+
+      depth++;
+    }
+
+    return true; // Could validate at least lookahead moves
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — variation validation
+  // ---------------------------------------------------------------------------
+
+  List<ChessGame> _validateVariations(
+    List<ChessGame> variations,
+    String fenBefore,
+  ) {
+    if (variations.isEmpty) return const [];
+
+    return variations.map((variation) {
+      final tempGame = ChessGame(
+        headers: {...variation.headers, 'FEN': fenBefore},
+        moves: variation.moves,
+        result: variation.result,
+      );
+      final result = validate(tempGame);
+      return ChessGame(
+        headers: variation.headers,
+        moves: result.validMoves,
+        result: variation.result,
+      );
+    }).toList();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private — candidate generation and ranking
+  // ---------------------------------------------------------------------------
+
+  /// Generate candidates ranked by likelihood of being the intended move.
+  ///
+  /// Returns candidates in order:
+  /// 1. Exact matches from legal moves
+  /// 2. Candidates from character substitution (high confidence)
+  /// 3. Candidates from general similarity (medium confidence)
+  List<String> _generateAndRankCandidates(ch.Chess chess, String san) {
+    final legalMoves = chess
+        .moves({'verbose': false})
+        .map((m) => m.toString())
+        .toList();
+
+    if (legalMoves.isEmpty) return [];
+
+    // Generate all candidates with scoring
+    final candidateScores = <String, double>{};
+
+    // Direct match (highest priority)
+    if (legalMoves.contains(san)) {
+      candidateScores[san] = 1.0;
+    }
+
+    // Character substitution candidates
+    for (final candidate in _generateCandidates(san)) {
+      if (legalMoves.contains(candidate) && !candidateScores.containsKey(candidate)) {
+        candidateScores[candidate] = 0.95; // High confidence
+      }
+    }
+
+    // Similarity-based candidates
+    for (final legalMove in legalMoves) {
+      if (!candidateScores.containsKey(legalMove)) {
+        final score = _similarity(san, legalMove);
+        if (score > similarityThreshold) {
+          candidateScores[legalMove] = score;
+        }
+      }
+    }
+
+    // Sort by score (descending) then alphabetically for determinism
+    final sorted = candidateScores.entries.toList()
+      ..sort((a, b) {
+        final scoreDiff = b.value.compareTo(a.value);
+        if (scoreDiff != 0) return scoreDiff;
+        return a.key.compareTo(b.key);
+      });
+
+    return sorted.map((e) => e.key).toList();
+  }
+
+  List<String> _generateCandidates(String san) {
+    final candidates = <String>{san};
+
+    // Common OCR substitutions specific to chess notation
+    const substitutions = <String, List<String>>{
+      '0': ['O'], // Castling: 0 vs O
+      'O': ['0'],
+      'l': ['1'], // Lower L vs 1
+      '1': ['l', 'I'],
+      'I': ['1', 'l'],
+      'B': ['8'], // B vs 8
+      '8': ['B'],
+      'S': ['5'], // S vs 5
+      '5': ['S'],
+      'G': ['6'], // G vs 6
+      '6': ['G'],
+      '2': ['Z'], // 2 vs Z
+      'Z': ['2'],
+      'a': ['4'], // a vs 4 in some fonts
+      '4': ['a'],
+    };
+
+    for (final entry in substitutions.entries) {
+      if (san.contains(entry.key)) {
+        for (final replacement in entry.value) {
+          candidates.add(san.replaceAll(entry.key, replacement));
+        }
+      }
+    }
+
+    // Fix castling notation
+    candidates.add(san.replaceAll('0-0-0', 'O-O-O'));
+    candidates.add(san.replaceAll('0-0', 'O-O'));
+
+    // Remove check/mate symbols
+    candidates.add(san.replaceAll('+', '').replaceAll('#', ''));
+
+    // Handle promotion notation variations
+    if (san.contains('=')) {
+      candidates.add(san.split('=').first);
+    }
+
+    // Remove extra spaces
+    candidates.addAll(
+      candidates.map((c) => c.replaceAll(' ', ''))
+    );
+
+    return candidates.toList();
+  }
+
+  /// Calculate similarity between two moves (0.0 to 1.0).
+  /// Uses a simple character-based matching algorithm.
+  double _similarity(String a, String b) {
+    if (a == b) return 1.0;
+    if (a.isEmpty || b.isEmpty) return 0.0;
+
+    final longer = a.length > b.length ? a : b;
+    final shorter = a.length > b.length ? b : a;
+
+    var matches = 0;
+    for (var i = 0; i < shorter.length; i++) {
+      if (i < longer.length && shorter[i] == longer[i]) matches++;
+    }
+    return matches / longer.length;
+  }
+}

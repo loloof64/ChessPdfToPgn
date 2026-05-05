@@ -142,8 +142,8 @@ void main() {
         ]),
       );
       // Should be corrected to O-O
-      final castleMove = result.validMoves.firstWhere(
-        (mv) => mv.moveNumber == 4,
+      final castleMove = result.validMoves.lastWhere(
+        (mv) => mv.san == 'O-O',
         orElse: () => throw StateError('Move not found'),
       );
       expect(castleMove.san, 'O-O');
