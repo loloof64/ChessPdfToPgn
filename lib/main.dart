@@ -1,21 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'chess_pgn_export_screen.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp()));
+  runApp(const ChessPgnApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ChessPgnApp extends StatelessWidget {
+  const ChessPgnApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Chess PDF to PGN - Cloud OCR',
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Chess PDF to PGN')),
-        body: const Center(child: Text('Ready for OCR')),
+      title: 'Chess PGN Converter',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.grey.shade900,
+          brightness: Brightness.light,
+        ),
+        typography: Typography.material2021(),
       ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.grey.shade900,
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: ThemeMode.system,
+      home: ChessPgnExportScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -1,37 +1,29 @@
-name: chess_pdf_to_pgn
-description: Chess PDF to PGN converter with Cloud OCR
+name: chess_pgn_converter
+description: Convert chess books to PGN files
+
 publish_to: "none"
 
-version: 2.0.0+1
+version: 1.0.0+1
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ^3.8.0
 
 dependencies:
   flutter:
     sdk: flutter
 
-  # ===== CORE =====
-  cupertino_icons: ^1.0.9
-
-  # ===== STATE MANAGEMENT =====
-  riverpod: ^3.2.1
-  flutter_riverpod: ^3.3.1
-
-  # ===== SERIALIZATION =====
-  freezed_annotation: ^3.1.0
+  # JSON serialization
   json_annotation: ^4.11.0
 
-  # ===== NETWORKING =====
-  http: ^1.6.0
-
-  # ===== FILE HANDLING =====
+  # File & Storage
   file_picker: ^11.0.2
   path_provider: ^2.1.5
 
-  # ===== UI/UX =====
-  loader_overlay: ^5.0.0
-  toastification: ^3.2.0
+  # Sharing
+  share_plus: ^12.0.2
+
+  # UI Enhancements
+  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:
@@ -39,9 +31,8 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
 
-  # ===== CODE GENERATION =====
+  # JSON generation
   build_runner: ^2.15.0
-  freezed: ^3.2.5
   json_serializable: ^6.13.2
 
 flutter:
