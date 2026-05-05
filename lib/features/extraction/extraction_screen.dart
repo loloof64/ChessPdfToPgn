@@ -12,16 +12,16 @@ import 'package:dartcv4/dartcv.dart' as cv;
 import '../../core/models/chess_game.dart';
 import '../../core/models/game_extraction_config.dart';
 import '../../core/models/page_layout.dart';
-import '../../core/models/ocr_line.dart';
 import '../../core/services/diagram_classifier.dart';
 import '../../core/services/opencv_service.dart';
 import '../../core/services/page_analyzer.dart';
 import '../../core/services/tesseract_service.dart';
 import '../../features/config/config_screen.dart';
 import '../../features/export/pgn_serializer.dart';
-import '../../features/processing/smart_pgn_parser.dart';
+import '../../features/processing/move_validator.dart';
 import '../../features/processing/pgn_parser.dart';
-import '../processing/move_validator.dart';
+import '../../core/models/ocr_line.dart';
+import '../../features/processing/smart_pgn_parser.dart';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -69,8 +69,8 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
 
   void _rebuildServices() {
     _tesseract = TesseractService(
-      // Use 'eng' for standard English (eng_chess not available)
-      tessLang: _config.locale.tessLang, // Use configured language
+      // Always use standard 'eng' — eng_chess model not available
+      tessLang: 'eng',
       psm: PageSegMode.singleBlock,
     );
     _opencv = OpenCvService();
@@ -190,7 +190,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
       });
 
       final page = doc.pages[i];
-      const scale = 600 / 72.0;
+      const scale = 300 / 72.0;
       final fullWidth = (page.width * scale).round();
       final fullHeight = (page.height * scale).round();
 
@@ -425,7 +425,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
               if (block.text != null) pendingTexts.add(block.text!);
               gameStarted = false;
 
-            // Text block — preprocess + OCR
+            // Text block — preprocess + OCR with spatial awareness
             case TextBlock():
               setState(() => _statusMsg = 'OCR — page ${i + 1} / $total…');
 
@@ -489,6 +489,7 @@ class _ExtractionScreenState extends State<ExtractionScreen> {
                   pendingTexts.add('{ $comment }');
                 }
               }
+
             default:
               break;
           }
