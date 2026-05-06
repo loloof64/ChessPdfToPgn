@@ -24,8 +24,20 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
       appBar: AppBar(
         title: const Text('Chess OCR to PGN'),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.grey[900],
+        elevation: 2,
+        backgroundColor: Colors.blue[700],
+        foregroundColor: Colors.white,
+        leading: _extraction != null
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    _extraction = null;
+                    _report = null;
+                  });
+                },
+              )
+            : null,
       ),
       body: _extraction == null ? _buildLoadingScreen() : _buildMainScreen(),
       backgroundColor: Colors.grey[100],
@@ -197,8 +209,8 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _isLoading ? null : _generateReport,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Generate Report'),
+                    icon: const Icon(Icons.receipt),
+                    label: const Text('Generate report'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[700],
                     ),
@@ -286,83 +298,6 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
         ),
       ),
     );
-  }
-
-  // Actions
-  Future<void> _pickJsonFile() async {
-    try {
-      final result = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-      );
-
-      if (result != null && result.files.isNotEmpty) {
-        final filePath = result.files.single.path;
-        if (filePath != null) {
-          await _loadJsonFile(filePath);
-        }
-      }
-    } catch (e) {
-      _showError('Error: $e');
-    }
-  }
-
-  Future<void> _pasteLiveJson() async {
-    final controller = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Paste JSON'),
-        content: TextField(
-          controller: controller,
-          maxLines: 10,
-          decoration: const InputDecoration(
-            hintText: 'Paste JSON here...',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _loadJsonString(controller.text);
-            },
-            child: const Text('Load'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _loadJsonFile(String filePath) async {
-    setState(() => _isLoading = true);
-    try {
-      _extraction = await OcrToPgnService.loadFromFile(filePath);
-      setState(() {});
-      _showSuccess('${_extraction!.totalPages} pages loaded');
-    } catch (e) {
-      _showError('Error: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _loadJsonString(String jsonString) async {
-    setState(() => _isLoading = true);
-    try {
-      _extraction = await OcrToPgnService.loadFromJson(jsonString);
-      setState(() {});
-      _showSuccess('${_extraction!.totalPages} pages loaded');
-    } catch (e) {
-      _showError('JSON error: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
   }
 
   Widget _buildReportPanel() {
@@ -460,6 +395,83 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
         ),
       ),
     );
+  }
+
+  // Actions
+  Future<void> _pickJsonFile() async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final filePath = result.files.single.path;
+        if (filePath != null) {
+          await _loadJsonFile(filePath);
+        }
+      }
+    } catch (e) {
+      _showError('Error: $e');
+    }
+  }
+
+  Future<void> _pasteLiveJson() async {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Paste JSON'),
+        content: TextField(
+          controller: controller,
+          maxLines: 10,
+          decoration: const InputDecoration(
+            hintText: 'Paste JSON here...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _loadJsonString(controller.text);
+            },
+            child: const Text('Load'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _loadJsonFile(String filePath) async {
+    setState(() => _isLoading = true);
+    try {
+      _extraction = await OcrToPgnService.loadFromFile(filePath);
+      setState(() {});
+      _showSuccess('${_extraction!.totalPages} pages loaded');
+    } catch (e) {
+      _showError('Error: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadJsonString(String jsonString) async {
+    setState(() => _isLoading = true);
+    try {
+      _extraction = await OcrToPgnService.loadFromJson(jsonString);
+      setState(() {});
+      _showSuccess('${_extraction!.totalPages} pages loaded');
+    } catch (e) {
+      _showError('JSON error: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _generateReport() async {
