@@ -208,17 +208,6 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: _isLoading ? null : _generateReport,
-                    icon: const Icon(Icons.receipt),
-                    label: const Text('Generate report'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[700],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
                     onPressed: _isLoading ? null : _generatePgn,
                     icon: const Icon(Icons.games),
                     label: const Text('Generate PGN'),
@@ -373,8 +362,8 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                       : () {
                           _generateReport();
                         },
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Refresh'),
+                  icon: const Icon(Icons.receipt),
+                  label: const Text('Generate Report'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[700],
                   ),
@@ -480,7 +469,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
     setState(() => _isLoading = true);
     try {
       setState(() {
-        _report = OcrToPgnService.generateReport(_extraction!);
+        _report = AdvancedPgnParser.generateAnalysisReport(_extraction!);
       });
     } catch (e) {
       _showError('Report error: $e');
