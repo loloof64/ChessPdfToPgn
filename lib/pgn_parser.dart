@@ -84,28 +84,29 @@ class AdvancedPgnParser {
     return metadata;
   }
 
-  /// Extract all moves from lines
-  /// Returns alternating white/black moves
+  /// Extract all moves from lines (improved version)
   static List<String> extractAllMoves(List<String> lines) {
     final moves = <String>[];
     final text = lines.join(' ');
     
-    // Match: number. move [comment] number. move [comment]
-    // Be very permissive to catch chess notation
+    // More aggressive move pattern that catches variations
+    // Pattern: optional number + optional dots + move notation
+    // Move notation: can be quite flexible
     final movePattern = RegExp(
-      r'(\d+)\s*\.\s*'  // move number
-      r'([a-hKQRBN0-9x@\-=+#!?]{2,10}?)'  // white move (permissive)
-      r'(?:\s+\{[^}]*\})?'  // optional comment in braces
-      r'(?:\s+([a-hKQRBN0-9x@\-=+#!?]{2,10}?))?'  // optional black move
-      r'(?:\s+\{[^}]*\})?',  // optional comment
+      r'(?:^|\s)'  // Start or whitespace
+      r'(?:\d+\.+)?'  // Optional move number (1., 2., etc)
+      r'\s*'
+      r'([a-hKQRBN]?[a-h]?[1-8]?[x@]?[a-h][1-8](?:=[QRBN])?[+#!?]*)'  // White move
+      r'(?:\s+([a-hKQRBN]?[a-h]?[1-8]?[x@]?[a-h][1-8](?:=[QRBN])?[+#!?]*))?'  // Black move
+      ,
       multiLine: false,
     );
 
     for (final match in movePattern.allMatches(text)) {
-      final whiteMove = match.group(2)?.trim() ?? '';
-      final blackMove = match.group(3)?.trim();
+      final whiteMove = match.group(1)?.trim() ?? '';
+      final blackMove = match.group(2)?.trim();
 
-      // Filter out garbage (like "20", "26" which are page numbers)
+      // Validate moves more carefully
       if (whiteMove.isNotEmpty && _looksLikeMove(whiteMove)) {
         moves.add(whiteMove);
         
@@ -115,22 +116,49 @@ class AdvancedPgnParser {
       }
     }
 
+    // If we found very few moves, try even more permissive pattern
+    if (moves.length < 10) {
+      moves.addAll(_extractMovesAggressive(text));
+    }
+
+    return moves;
+  }
+
+  /// Ultra-permissive move extraction as fallback
+  static List<String> _extractMovesAggressive(String text) {
+    final moves = <String>[];
+    
+    // Look for patterns like: e4, Nf3, O-O, exd5, f8=Q, etc.
+    // Much simpler pattern
+    final simplePattern = RegExp(
+      r'[a-hKQRBN][a-h]?[1-8]?[x@]?[a-h][1-8](?:=[QRBN])?[+#!?]*',
+    );
+
+    for (final match in simplePattern.allMatches(text)) {
+      final move = match.group(0)!;
+      
+      // Filter out junk
+      if (move.length >= 2 && move.length <= 8 && _looksLikeMove(move)) {
+        moves.add(move);
+      }
+    }
+
     return moves;
   }
 
   /// Check if text looks like a valid chess move
   static bool _looksLikeMove(String text) {
-    // Must have: piece letter (optional) + destination square + optional capture/promotion
-    // Examples: e4, Nf3, exd5, f8=Q, O-O, O-O-O
-    
     // Reject pure numbers (page numbers, ratings)
     if (RegExp(r'^\d+$').hasMatch(text)) return false;
     
-    // Must contain at least one file letter (a-h) or O (castling)
+    // Reject very short or very long
+    if (text.length < 2 || text.length > 8) return false;
+    
+    // Must have at least one valid file letter (a-h) or O (castling)
     if (!text.contains(RegExp(r'[a-hO]', caseSensitive: false))) return false;
     
-    // Must be reasonably short (max 10 chars)
-    if (text.length > 10) return false;
+    // Reject pure text (no numbers)
+    if (!text.contains(RegExp(r'[0-9]'))) return false;
     
     return true;
   }
@@ -239,16 +267,29 @@ class AdvancedPgnParser {
     final lines = <String>[];
     var currentLine = <String>[];
     int lastY = -1;
+    int lastX = -1;
 
     for (final frag in sorted) {
+      // New line if Y differs significantly
       if (lastY >= 0 && (frag.y - lastY).abs() > 15) {
         if (currentLine.isNotEmpty) {
           lines.add(currentLine.join(' '));
         }
         currentLine = [];
+        lastX = -1;
       }
+      
+      // Also break line if X gap is too large (new column)
+      if (lastX >= 0 && (frag.x - lastX) > 200) {
+        if (currentLine.isNotEmpty) {
+          lines.add(currentLine.join(' '));
+        }
+        currentLine = [];
+      }
+      
       currentLine.add(frag.text);
       lastY = frag.y;
+      lastX = frag.x + frag.width;
     }
 
     if (currentLine.isNotEmpty) {
@@ -282,11 +323,12 @@ class AdvancedPgnParser {
     buffer.writeln();
 
     buffer.writeln('Lines Grouped (${lines.length} total):');
-    for (int i = 0; i < lines.take(10).length; i++) {
-      buffer.writeln('  Line $i: "${lines[i].substring(0, lines[i].length > 50 ? 50 : lines[i].length)}"${lines[i].length > 50 ? '...' : ''}');
-    }
-    if (lines.length > 10) {
-      buffer.writeln('  ... and ${lines.length - 10} more lines');
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      final displayLine = line.length > 80 
+          ? '${line.substring(0, 80)}...'
+          : line;
+      buffer.writeln('  Line $i: "$displayLine"');
     }
     buffer.writeln();
 
@@ -296,8 +338,8 @@ class AdvancedPgnParser {
     buffer.writeln();
 
     if (moves.isNotEmpty) {
-      buffer.writeln('Sample Moves:');
-      for (int i = 0; i < moves.take(10).length; i += 2) {
+      buffer.writeln('All Moves:');
+      for (int i = 0; i < moves.length; i += 2) {
         final moveNum = (i ~/ 2) + 1;
         buffer.write('  $moveNum. ${moves[i]}');
         if (i + 1 < moves.length) {
@@ -305,15 +347,11 @@ class AdvancedPgnParser {
         }
         buffer.writeln();
       }
-
-      if (moves.length > 10) {
-        buffer.writeln('  ... and ${moves.length - 10} more moves');
-      }
     } else {
       buffer.writeln('  No moves found!');
-      buffer.writeln('\nDEBUG: Checking first few lines for move patterns:');
-      final text = lines.take(20).join(' ');
-      buffer.writeln('  Text: "${text.substring(0, text.length > 200 ? 200 : text.length)}"...');
+      buffer.writeln('\nDEBUG: Checking raw text for patterns:');
+      final text = lines.take(30).join(' ');
+      buffer.writeln('  Text: "$text"');
     }
 
     return buffer.toString();
