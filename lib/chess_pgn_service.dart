@@ -85,19 +85,86 @@ class OcrToPgnService {
     return fixed;
   }
 
-  /// Extract potential games from OCR data
-  /// Returns list of game texts (each game is a concatenated string of fragments)
-  static List<String> extractGameTexts(OcrExtraction extraction) {
+  /// Extract game sections from all pages
+  /// Returns list of game texts (grouped by move number patterns)
+  static List<String> extractGameSections(OcrExtraction extraction) {
     final allText = extraction.getAllText();
     
-    // Split by game numbers (1., 2., Game 1, etc.)
-    final gamePattern = RegExp(r'^\s*(?:\d+\.|Game\s+\d+|Partie\s+\d+)', multiLine: true);
-    final games = allText.split(gamePattern);
+    // Split by common game separators
+    final gameSections = allText.split(RegExp(r'\n\s*\n'));
     
-    // Filter out empty games
-    return games
-        .where((game) => game.trim().isNotEmpty)
+    return gameSections
+        .where((section) => section.trim().isNotEmpty)
         .toList();
+  }
+
+  /// Extract moves from a game section (text with "1. e4 c5" format)
+  static List<String> extractMovesFromText(String gameText) {
+    final moves = <String>[];
+    
+    // Pattern: number. white_move [black_move]
+    final movePattern = RegExp(
+      r'(\d+)(?:\.\s*|\.\.\.\s+)'
+      r'([A-Za-z0-9\-@x=]+)'
+      r'(?:\s+([A-Za-z0-9\-@x=]+))?',
+    );
+
+    for (final match in movePattern.allMatches(gameText)) {
+      final whiteMove = match.group(2)?.trim() ?? '';
+      final blackMove = match.group(3)?.trim();
+
+      if (whiteMove.isNotEmpty) {
+        moves.add(whiteMove);
+        if (blackMove != null && blackMove.isNotEmpty) {
+          moves.add(blackMove);
+        }
+      }
+    }
+
+    return moves;
+  }
+
+  /// Build a simple PGN from extracted data
+  static String buildPgnFromExtraction(
+    OcrExtraction extraction, {
+    String white = '?',
+    String black = '?',
+    String? date,
+    String? event,
+    String? site,
+    String result = '*',
+  }) {
+    final buffer = StringBuffer();
+
+    // Headers
+    buffer.writeln('[Event "${ event ?? 'Chess Game'}"]');
+    buffer.writeln('[Site "${ site ?? '?'}"]');
+    buffer.writeln('[Date "${ date ?? '????.??.??'}"]');
+    buffer.writeln('[White "$white"]');
+    buffer.writeln('[Black "$black"]');
+    buffer.writeln('[Result "$result"]');
+    buffer.writeln();
+
+    // Try to extract all moves from all pages
+    final allText = extraction.getAllText();
+    final moves = extractMovesFromText(allText);
+
+    // Write moves
+    for (int i = 0; i < moves.length; i += 2) {
+      final moveNum = (i ~/ 2) + 1;
+      final whiteMove = moves[i];
+
+      buffer.write('$moveNum. $whiteMove ');
+
+      if (i + 1 < moves.length) {
+        final blackMove = moves[i + 1];
+        buffer.write('$blackMove ');
+      }
+    }
+
+    buffer.write(result);
+
+    return buffer.toString();
   }
 
   /// Parse a game text to extract moves

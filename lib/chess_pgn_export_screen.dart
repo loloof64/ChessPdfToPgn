@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
@@ -42,11 +43,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.games,
-              color: Colors.white,
-              size: 50,
-            ),
+            child: const Icon(Icons.games, color: Colors.white, size: 50),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -127,10 +124,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                 ),
                 Text(
                   '${_extraction!.totalFragments} fragments',
-                  style: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.grey[400], fontSize: 16),
                 ),
               ],
             ),
@@ -145,7 +139,9 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                 ),
                 _buildChip(
                   'Valid',
-                  _extraction!.isValid() ? Colors.green[700]! : Colors.red[700]!,
+                  _extraction!.isValid()
+                      ? Colors.green[700]!
+                      : Colors.red[700]!,
                 ),
               ],
             ),
@@ -177,10 +173,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
         ],
       ),
       child: Padding(
@@ -193,13 +186,30 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _isLoading ? null : _generateReport,
-              icon: const Icon(Icons.assessment),
-              label: const Text('View Extraction Report'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[700],
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _generateReport,
+                    icon: const Icon(Icons.assessment),
+                    label: const Text('View Report'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[700],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _generatePgn,
+                    icon: const Icon(Icons.games),
+                    label: const Text('Generate PGN'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[700],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -209,20 +219,17 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
 
   Widget _buildFragmentsPreview() {
     if (_extraction!.pages.isEmpty) return const SizedBox.shrink();
-    
+
     final firstPage = _extraction!.pages[0];
     final sampleFragments = firstPage.fragments.take(5).toList();
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
         ],
       ),
       child: Padding(
@@ -302,10 +309,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
               ),
               child: SelectableText(
                 _report!,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontFamily: 'monospace',
-                ),
+                style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
               ),
             ),
             const SizedBox(height: 12),
@@ -314,9 +318,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      SharePlus.instance.share(
-                        ShareParams(text: _report!),
-                      );
+                      SharePlus.instance.share(ShareParams(text: _report!));
                     },
                     icon: const Icon(Icons.share),
                     label: const Text('Share'),
@@ -421,21 +423,91 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
     });
   }
 
+  Future<void> _generatePgn() async {
+    if (_extraction == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final pgn = OcrToPgnService.buildPgnFromExtraction(_extraction!);
+
+      // Show PGN dialog with save option
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Generated PGN'),
+          content: SingleChildScrollView(
+            child: SelectableText(
+              pgn,
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                SharePlus.instance.share(ShareParams(text: pgn));
+              },
+              icon: const Icon(Icons.share),
+              label: const Text('Share'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {
+                Navigator.pop(context);
+                await _savePgnFile(pgn);
+              },
+              icon: const Icon(Icons.save),
+              label: const Text('Save'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[700],
+              ),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      _showError('PGN generation error: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _savePgnFile(String pgnContent) async {
+    try {
+      // Let user choose save location
+      final fileName =
+          'chess_game_${DateTime.now().millisecondsSinceEpoch}.pgn';
+
+      final result = await FilePicker.saveFile(
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['pgn'],
+      );
+
+      if (result != null) {
+        final file = File(result);
+        await file.writeAsString(pgnContent);
+
+        _showSuccess('PGN saved: ${file.path}');
+      } else {
+        _showSuccess('Save cancelled');
+      }
+    } catch (e) {
+      _showError('Save error: $e');
+    }
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red[700],
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red[700]),
     );
   }
 
   void _showSuccess(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green[700],
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.green[700]),
     );
   }
 }
