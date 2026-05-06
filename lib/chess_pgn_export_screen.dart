@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'chess_models.dart';
 import 'chess_pgn_service.dart';
+import 'pgn_parser.dart';
 
 class OcrToPgnScreen extends StatefulWidget {
   const OcrToPgnScreen({super.key});
@@ -84,8 +85,13 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
         children: [
           _buildSummaryCard(),
           _buildAnalysisCard(),
-          _buildFragmentsPreview(),
-          if (_report != null) _buildReportCard(),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _buildFragmentsPreview()),
+              Expanded(child: _buildReportPanel()),
+            ],
+          ),
           const SizedBox(height: 20),
         ],
       ),
@@ -191,8 +197,8 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _isLoading ? null : _generateReport,
-                    icon: const Icon(Icons.assessment),
-                    label: const Text('View Report'),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Generate Report'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[700],
                     ),
@@ -282,64 +288,6 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
     );
   }
 
-  Widget _buildReportCard() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Extraction report',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: SelectableText(
-                _report!,
-                style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      SharePlus.instance.share(ShareParams(text: _report!));
-                    },
-                    icon: const Icon(Icons.share),
-                    label: const Text('Share'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() => _report = null);
-                  },
-                  icon: const Icon(Icons.close),
-                  label: const Text('Close'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // Actions
   Future<void> _pickJsonFile() async {
     try {
@@ -417,10 +365,139 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
     }
   }
 
+  Widget _buildReportPanel() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'PGN Analysis',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            if (_report != null)
+              SizedBox(
+                height: 200,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      _report!,
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontFamily: 'monospace',
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              SizedBox(
+                height: 200,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Click "Generate Report" to see analysis',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                  ),
+                ),
+              ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          _generateReport();
+                        },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Refresh'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue[700],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (_report != null)
+                  ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _saveReport,
+                    icon: const Icon(Icons.save),
+                    label: const Text('Save'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[700],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _generateReport() async {
-    setState(() {
-      _report = OcrToPgnService.generateReport(_extraction!);
-    });
+    if (_extraction == null) return;
+
+    setState(() => _isLoading = true);
+    try {
+      setState(() {
+        _report = OcrToPgnService.generateReport(_extraction!);
+      });
+    } catch (e) {
+      _showError('Report error: $e');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _saveReport() async {
+    if (_report == null) return;
+
+    try {
+      final fileName =
+          'extraction_report_${DateTime.now().millisecondsSinceEpoch}.txt';
+
+      final result = await FilePicker.saveFile(
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['txt'],
+      );
+
+      if (result != null) {
+        final file = File(result);
+        await file.writeAsString(_report!);
+        _showSuccess('Report saved: ${file.path}');
+      }
+    } catch (e) {
+      _showError('Save error: $e');
+    }
   }
 
   Future<void> _generatePgn() async {
@@ -428,17 +505,41 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final pgn = OcrToPgnService.buildPgnFromExtraction(_extraction!);
+      // Use async parser to avoid blocking UI
+      final pgn = await AdvancedPgnParser.generatePgnAsync(_extraction!);
+      final analysis = AdvancedPgnParser.generateAnalysisReport(_extraction!);
 
       // Show PGN dialog with save option
+      if (!mounted) return;
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Generated PGN'),
           content: SingleChildScrollView(
-            child: SelectableText(
-              pgn,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Analysis:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                SelectableText(
+                  analysis,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 9),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'PGN:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                SelectableText(
+                  pgn,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 10),
+                ),
+              ],
             ),
           ),
           actions: [

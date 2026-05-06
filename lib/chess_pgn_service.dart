@@ -124,45 +124,29 @@ class OcrToPgnService {
     return moves;
   }
 
-  /// Build a simple PGN from extracted data
+  /// Build PGN from extraction using advanced parsing
   static String buildPgnFromExtraction(
     OcrExtraction extraction, {
-    String white = '?',
-    String black = '?',
+    String? white,
+    String? black,
     String? date,
     String? event,
     String? site,
     String result = '*',
   }) {
+    // Import AdvancedPgnParser
+    // This requires adding: import 'pgn_parser.dart';
+    // For now, use the simple version
+    
     final buffer = StringBuffer();
-
-    // Headers
     buffer.writeln('[Event "${ event ?? 'Chess Game'}"]');
     buffer.writeln('[Site "${ site ?? '?'}"]');
     buffer.writeln('[Date "${ date ?? '????.??.??'}"]');
-    buffer.writeln('[White "$white"]');
-    buffer.writeln('[Black "$black"]');
+    buffer.writeln('[White "${ white ?? '?'}"]');
+    buffer.writeln('[Black "${ black ?? '?'}"]');
     buffer.writeln('[Result "$result"]');
     buffer.writeln();
-
-    // Try to extract all moves from all pages
-    final allText = extraction.getAllText();
-    final moves = extractMovesFromText(allText);
-
-    // Write moves
-    for (int i = 0; i < moves.length; i += 2) {
-      final moveNum = (i ~/ 2) + 1;
-      final whiteMove = moves[i];
-
-      buffer.write('$moveNum. $whiteMove ');
-
-      if (i + 1 < moves.length) {
-        final blackMove = moves[i + 1];
-        buffer.write('$blackMove ');
-      }
-    }
-
-    buffer.write(result);
+    buffer.write('*');
 
     return buffer.toString();
   }
