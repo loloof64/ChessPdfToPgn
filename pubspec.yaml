@@ -25,6 +25,9 @@ dependencies:
   # UI Enhancements
   google_fonts: ^8.1.0
 
+  # Chess rules validation
+  chess: ^0.8.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

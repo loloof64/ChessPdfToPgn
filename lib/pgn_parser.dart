@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'chess_models.dart';
+import 'move_validator.dart';
 
 /// Advanced PGN parser that reconstructs games from raw OCR fragments
 /// Uses async/await to avoid blocking UI
 class AdvancedPgnParser {
-  
   /// Group fragments into logical lines based on Y position (async version)
-  static Future<List<String>> groupFragmentsIntoLinesAsync(List<TextFragment> fragments) async {
+  static Future<List<String>> groupFragmentsIntoLinesAsync(
+    List<TextFragment> fragments,
+  ) async {
     return Future(() {
       if (fragments.isEmpty) return [];
-      
+
       // Sort by Y, then X
       final sorted = List<TextFragment>.from(fragments);
       sorted.sort((a, b) {
@@ -46,101 +48,100 @@ class AdvancedPgnParser {
   /// Extract metadata (white, black, date, event) from lines
   static Map<String, String> extractMetadata(List<String> lines) {
     final metadata = <String, String>{};
-    
+
     for (final line in lines.take(20)) {
       // White player
-      if (line.contains(RegExp(r'(?:White|Blanc)\s*[:=]', caseSensitive: false))) {
-        final match = RegExp(r'(?:White|Blanc)\s*[:=]\s*([A-Za-z\s\-]+)', caseSensitive: false).firstMatch(line);
+      if (line.contains(
+        RegExp(r'(?:White|Blanc)\s*[:=]', caseSensitive: false),
+      )) {
+        final match = RegExp(
+          r'(?:White|Blanc)\s*[:=]\s*([A-Za-z\s\-]+)',
+          caseSensitive: false,
+        ).firstMatch(line);
         if (match != null) {
           metadata['white'] = match.group(1)?.trim() ?? '';
         }
       }
-      
+
       // Black player
-      if (line.contains(RegExp(r'(?:Black|Noir)\s*[:=]', caseSensitive: false))) {
-        final match = RegExp(r'(?:Black|Noir)\s*[:=]\s*([A-Za-z\s\-]+)', caseSensitive: false).firstMatch(line);
+      if (line.contains(
+        RegExp(r'(?:Black|Noir)\s*[:=]', caseSensitive: false),
+      )) {
+        final match = RegExp(
+          r'(?:Black|Noir)\s*[:=]\s*([A-Za-z\s\-]+)',
+          caseSensitive: false,
+        ).firstMatch(line);
         if (match != null) {
           metadata['black'] = match.group(1)?.trim() ?? '';
         }
       }
-      
+
       // Date
       if (line.contains(RegExp(r'Date|Année', caseSensitive: false))) {
-        final match = RegExp(r'(\d{4}[.\-/]?\d{0,2}[.\-/]?\d{0,2})').firstMatch(line);
+        final match = RegExp(
+          r'(\d{4}[.\-/]?\d{0,2}[.\-/]?\d{0,2})',
+        ).firstMatch(line);
         if (match != null) {
           metadata['date'] = match.group(1) ?? '';
         }
       }
-      
+
       // Event
       if (line.contains(RegExp(r'Event|Événement', caseSensitive: false))) {
-        final match = RegExp(r'(?:Event|Événement)\s*[:=]\s*([^\n,]+)', caseSensitive: false).firstMatch(line);
+        final match = RegExp(
+          r'(?:Event|Événement)\s*[:=]\s*([^\n,]+)',
+          caseSensitive: false,
+        ).firstMatch(line);
         if (match != null) {
           metadata['event'] = match.group(1)?.trim() ?? '';
         }
       }
     }
-    
+
     return metadata;
   }
 
-  /// Extract all moves from lines (improved version)
+  /// Extract all moves from lines (improved: use move numbers as anchors)
   static List<String> extractAllMoves(List<String> lines) {
     final moves = <String>[];
     final text = lines.join(' ');
-    
-    // More aggressive move pattern that catches variations
-    // Pattern: optional number + optional dots + move notation
-    // Move notation: can be quite flexible
-    final movePattern = RegExp(
-      r'(?:^|\s)'  // Start or whitespace
-      r'(?:\d+\.+)?'  // Optional move number (1., 2., etc)
-      r'\s*'
-      r'([a-hKQRBN]?[a-h]?[1-8]?[x@]?[a-h][1-8](?:=[QRBN])?[+#!?]*)'  // White move
-      r'(?:\s+([a-hKQRBN]?[a-h]?[1-8]?[x@]?[a-h][1-8](?:=[QRBN])?[+#!?]*))?'  // Black move
-      ,
-      multiLine: false,
-    );
 
-    for (final match in movePattern.allMatches(text)) {
-      final whiteMove = match.group(1)?.trim() ?? '';
-      final blackMove = match.group(2)?.trim();
+    // First, find all move numbers (1., 2., 3., etc.)
+    // These are reliable anchors
+    final moveNumberPattern = RegExp(r'\b(\d+)\.\s+');
 
-      // Validate moves more carefully
-      if (whiteMove.isNotEmpty && _looksLikeMove(whiteMove)) {
-        moves.add(whiteMove);
-        
-        if (blackMove != null && blackMove.isNotEmpty && _looksLikeMove(blackMove)) {
-          moves.add(blackMove);
-        }
-      }
-    }
+    final matches = moveNumberPattern.allMatches(text);
 
-    // If we found very few moves, try even more permissive pattern
-    if (moves.length < 10) {
-      moves.addAll(_extractMovesAggressive(text));
-    }
+    for (final match in matches) {
+      final moveNum = int.parse(match.group(1)!);
+      final startPos = match.end;
 
-    return moves;
-  }
+      // Find the next move number (or end of text)
+      final nextMatchPos = matches
+          .firstWhere(
+            (m) => int.parse(m.group(1)!) == moveNum + 1,
+            orElse: () => match,
+          )
+          .start;
 
-  /// Ultra-permissive move extraction as fallback
-  static List<String> _extractMovesAggressive(String text) {
-    final moves = <String>[];
-    
-    // Look for patterns like: e4, Nf3, O-O, exd5, f8=Q, etc.
-    // Much simpler pattern
-    final simplePattern = RegExp(
-      r'[a-hKQRBN][a-h]?[1-8]?[x@]?[a-h][1-8](?:=[QRBN])?[+#!?]*',
-    );
+      // Extract text between this move number and next
+      final moveText = nextMatchPos > startPos
+          ? text.substring(startPos, nextMatchPos)
+          : text.substring(startPos);
 
-    for (final match in simplePattern.allMatches(text)) {
-      final move = match.group(0)!;
-      
-      // Filter out junk
-      if (move.length >= 2 && move.length <= 8 && _looksLikeMove(move)) {
-        moves.add(move);
-      }
+      // Extract white and black moves from this chunk
+      // Look for chess moves (pieces + squares)
+      final moveMatches = RegExp(
+        r'([a-hKQRBN]?[a-h][1-8](?:=[QRBN])?[+#!?]*)',
+      ).allMatches(moveText);
+
+      final movesInChunk = moveMatches
+          .map((m) => m.group(1)!)
+          .where((m) => _looksLikeMove(m))
+          .take(2) // Max 2 moves per turn (white + black)
+          .toList();
+
+      moves.addAll(movesInChunk);
     }
 
     return moves;
@@ -148,18 +149,18 @@ class AdvancedPgnParser {
 
   /// Check if text looks like a valid chess move
   static bool _looksLikeMove(String text) {
-    // Reject pure numbers (page numbers, ratings)
-    if (RegExp(r'^\d+$').hasMatch(text)) return false;
-    
-    // Reject very short or very long
+    // Must be 2-8 chars
     if (text.length < 2 || text.length > 8) return false;
-    
-    // Must have at least one valid file letter (a-h) or O (castling)
+
+    // Reject pure numbers
+    if (RegExp(r'^\d+$').hasMatch(text)) return false;
+
+    // Must have at least one file (a-h) or O (castling)
     if (!text.contains(RegExp(r'[a-hO]', caseSensitive: false))) return false;
-    
-    // Reject pure text (no numbers)
-    if (!text.contains(RegExp(r'[0-9]'))) return false;
-    
+
+    // Must have at least one rank (1-8)
+    if (!text.contains(RegExp(r'[1-8]'))) return false;
+
     return true;
   }
 
@@ -167,7 +168,7 @@ class AdvancedPgnParser {
   static List<String> extractComments(List<String> lines) {
     final comments = <String>[];
     final text = lines.join(' ');
-    
+
     // Extract text in braces {comment}
     final bracePattern = RegExp(r'\{([^}]+)\}');
     for (final match in bracePattern.allMatches(text)) {
@@ -176,7 +177,7 @@ class AdvancedPgnParser {
         comments.add(comment);
       }
     }
-    
+
     // Extract text in parentheses (comment)
     final parenPattern = RegExp(r'\(([^)]+)\)');
     for (final match in parenPattern.allMatches(text)) {
@@ -185,11 +186,11 @@ class AdvancedPgnParser {
         comments.add(comment);
       }
     }
-    
+
     return comments;
   }
 
-  /// Generate PGN from extraction (async version)
+  /// Generate PGN from extraction with move validation
   static Future<String> generatePgnAsync(
     OcrExtraction extraction, {
     String? white,
@@ -206,10 +207,10 @@ class AdvancedPgnParser {
         allFragments.addAll(page.fragments);
       }
 
-      // Group into lines (sync, but fast enough)
+      // Group into lines
       final lines = groupFragmentsIntoLinesSync(allFragments);
 
-      // Extract metadata (if not provided)
+      // Extract metadata
       final foundMetadata = extractMetadata(lines);
       white ??= foundMetadata['white'] ?? '?';
       black ??= foundMetadata['black'] ?? '?';
@@ -217,9 +218,16 @@ class AdvancedPgnParser {
       event ??= foundMetadata['event'] ?? 'Chess Game';
       site ??= '?';
 
-      // Extract moves and comments
-      final moves = extractAllMoves(lines);
-      final comments = extractComments(lines);
+      // Extract and validate moves using chess rules
+      final rawMoves = extractAllMoves(lines);
+      final validator = MoveValidator();
+      final validMoves = <String>[];
+
+      for (final move in rawMoves) {
+        if (validator.tryMove(move)) {
+          validMoves.add(move);
+        }
+      }
 
       // Build PGN
       final buffer = StringBuffer();
@@ -229,20 +237,15 @@ class AdvancedPgnParser {
       buffer.writeln('[White "$white"]');
       buffer.writeln('[Black "$black"]');
       buffer.writeln('[Result "$result"]');
-      
-      if (comments.isNotEmpty) {
-        buffer.writeln('[Comment "${comments.join('; ')}"]');
-      }
-      
       buffer.writeln();
 
       // Write moves
-      for (int i = 0; i < moves.length; i += 2) {
+      for (int i = 0; i < validMoves.length; i += 2) {
         final moveNum = (i ~/ 2) + 1;
-        buffer.write('$moveNum. ${moves[i]} ');
+        buffer.write('$moveNum. ${validMoves[i]} ');
 
-        if (i + 1 < moves.length) {
-          buffer.write('${moves[i + 1]} ');
+        if (i + 1 < validMoves.length) {
+          buffer.write('${validMoves[i + 1]} ');
         }
       }
 
@@ -253,9 +256,11 @@ class AdvancedPgnParser {
   }
 
   /// Synchronous version of grouping (for internal use)
-  static List<String> groupFragmentsIntoLinesSync(List<TextFragment> fragments) {
+  static List<String> groupFragmentsIntoLinesSync(
+    List<TextFragment> fragments,
+  ) {
     if (fragments.isEmpty) return [];
-    
+
     final sorted = List<TextFragment>.from(fragments);
     sorted.sort((a, b) {
       if ((a.y - b.y).abs() > 15) {
@@ -278,7 +283,7 @@ class AdvancedPgnParser {
         currentLine = [];
         lastX = -1;
       }
-      
+
       // Also break line if X gap is too large (new column)
       if (lastX >= 0 && (frag.x - lastX) > 200) {
         if (currentLine.isNotEmpty) {
@@ -286,7 +291,7 @@ class AdvancedPgnParser {
         }
         currentLine = [];
       }
-      
+
       currentLine.add(frag.text);
       lastY = frag.y;
       lastX = frag.x + frag.width;
@@ -325,7 +330,7 @@ class AdvancedPgnParser {
     buffer.writeln('Lines Grouped (${lines.length} total):');
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
-      final displayLine = line.length > 80 
+      final displayLine = line.length > 80
           ? '${line.substring(0, 80)}...'
           : line;
       buffer.writeln('  Line $i: "$displayLine"');
