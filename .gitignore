@@ -27,3 +27,4 @@ doc/api/
 .flutter-plugins-dependencies
 flutter_log.txt
 *.bak
+*.excalidraw

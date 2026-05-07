@@ -141,7 +141,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                   ),
                 ),
                 Text(
-                  '${_extraction!.totalFragments} fragments',
+                  '${_extraction!.totalLines} lines',
                   style: TextStyle(color: Colors.grey[400], fontSize: 16),
                 ),
               ],
@@ -208,6 +208,17 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
+                    onPressed: _isLoading ? null : _generateReport,
+                    icon: const Icon(Icons.receipt),
+                    label: const Text('Generate report'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[700],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
                     onPressed: _isLoading ? null : _generatePgn,
                     icon: const Icon(Icons.games),
                     label: const Text('Generate PGN'),
@@ -228,7 +239,7 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
     if (_extraction!.pages.isEmpty) return const SizedBox.shrink();
 
     final firstPage = _extraction!.pages[0];
-    final sampleFragments = firstPage.fragments.take(5).toList();
+    final sampleLines = firstPage.lines.take(5).toList();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -245,11 +256,11 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Sample fragments (Page 1)',
+              'Sample lines (Page 1)',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ...sampleFragments.map((frag) {
+            ...sampleLines.map((line) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Container(
@@ -263,11 +274,11 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '"${frag.text}"',
+                        '"${line.text}"',
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       Text(
-                        'Pos: (${frag.x}, ${frag.y}) | Size: ${frag.width}x${frag.height} | Confidence: ${frag.confidence}%',
+                        'Col: ${line.column} | Pos: (${line.x}, ${line.y}) | Size: ${line.width}x${line.height} | Conf: ${line.confidence}%',
                         style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                       ),
                     ],
@@ -275,11 +286,11 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
                 ),
               );
             }),
-            if (firstPage.fragments.length > 5)
+            if (firstPage.lines.length > 5)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  '... and ${firstPage.fragments.length - 5} more fragments on this page',
+                  '... and ${firstPage.lines.length - 5} more lines on this page',
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ),
@@ -356,19 +367,6 @@ class _OcrToPgnScreenState extends State<OcrToPgnScreen> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ElevatedButton.icon(
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          _generateReport();
-                        },
-                  icon: const Icon(Icons.receipt),
-                  label: const Text('Generate Report'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700],
-                  ),
-                ),
-                const SizedBox(width: 8),
                 if (_report != null)
                   ElevatedButton.icon(
                     onPressed: _isLoading ? null : _saveReport,
